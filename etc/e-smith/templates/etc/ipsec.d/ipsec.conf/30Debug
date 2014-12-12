@@ -1,0 +1,6 @@
+my $klipsdebug = $ipsec->prop('klipsdebug') || "none";
+$OUT .= "\t$klipsdebug\n";
+
+
+my $plutodebug = $ipsec->prop('plutodebug') || "none";
+OUT .= "\t$plutodebug\n";

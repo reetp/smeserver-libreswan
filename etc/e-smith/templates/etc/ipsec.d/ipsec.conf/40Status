@@ -1,0 +1,4 @@
+# start = dial out, add = dial in - db 'auto'
+#    my $auto = $ipsec->prop('auto');
+#        $OUT .= "   auto = $auto";
+auto=start

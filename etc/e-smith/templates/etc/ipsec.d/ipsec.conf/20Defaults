@@ -1,0 +1,16 @@
+$OUT .= "type=tunnel\n";
+$OUT .= "authby=secret\n";
+$OUT .= "ikelifetime=28800s\n";
+$OUT .= "keylife=3600s\n";
+
+# Dead Peer Detection - restart/clear - clear is only used in road warrior configs - db 'dpdaction'
+$OUT .= "dpdaction=restart\n";
+
+# db 'dpddelay'
+$OUT .= "dpddelay=30\n"
+
+# db 'dpdtimeout'
+$OUT .= "dpdtimeout=10\n"
+
+
+

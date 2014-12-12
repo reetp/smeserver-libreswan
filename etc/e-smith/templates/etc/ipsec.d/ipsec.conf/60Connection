@@ -1,0 +1,26 @@
+
+
+
+# Left is usually always %defaultroute
+left=%defaultroute
+
+# Local private network IP - db 'leftip'
+#    my $leftip = $ipsec->prop('leftip');
+#        $OUT .= "   leftip = $leftip";
+leftsourceip=192.168.99.1
+
+# Local private subnet - db 'leftsubnet'
+#    my $leftsubnet = $ipsec->prop('leftsubnet');
+#        $OUT .= "   leftsubnet = $leftsubnet
+leftsubnet=192.168.99.0/24
+
+# Remote IP - db 'rightip'
+#     my $rightip = $ipsec->prop('rightip');
+#        $OUT .= "   right = $rightip";
+right=222.222.222.222
+
+# Remote private network db 'rightsubnet'
+#    my $rightsubnet = $ipsec->prop('rightsubnet');
+#     $OUT .= "   rightsubnet = $rightsubnet";
+
+rightsubnet=10.0.0.0/24

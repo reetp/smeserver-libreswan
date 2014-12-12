@@ -1,0 +1,6 @@
+#Per connection settings like this
+
+# connection=name|vps-to-voip | leftip|192.168.99.1 | leftsubnet|255.255.255.0 | rightip|222.222.222.222 | rightsubnet|10.0.0.0/24 | auto|start/add  | pfs|yes/no |  dpdaction|restart | dpddelay|30 | dpdtimeout|10 | passwd|MyPasswd
+
+connection=name|vps-to-voip|leftip|192.168.99.1|leftsubnet|255.255.255.0|rightip|222.222.222.222|rightsubnet|10.0.0.0/24|auto|start/add|pfs|yes|dpdaction|restart|dpddelay|30|dpdtimeout|10|passwd|MyPasswd
+
