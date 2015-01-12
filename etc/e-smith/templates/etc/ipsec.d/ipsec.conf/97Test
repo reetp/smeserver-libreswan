@@ -1,43 +1,29 @@
-#!/usr/bin/perl -w
 {
     use strict;
     use warnings;
-    use esmith::NetworksDB;
     use esmith::ConfigDB;
-    #    use Net::IPv4Addr qw(ipv4_in_network ipv4_parse);
-    #    use esmith::util::network qw(isValidIP);
+ 
+    my $configDB = esmith::ConfigDB->open_ro or die ("can't open Config DB");
 
-    my $configDB = esmith::ConfigDB->open_ro or die "can't open Config DB";
+    my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections') or die ("cant connect to ipsec database");
 
-    # Which one of the following two lines should you use ?
-
-    my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections') or die "Can't open ipsec_connectons DB;
-
-    # Here we start
-    
-    # Should get all config db ipec settings here so we can use further down but damned if I know :
-    my %props = $configDB->get(ipsec)->props;
-    
+   
     # This should get all the connections in an array
-    my @connections = $ipsecDB->connections;
 
-    foreach my $ipsec (@connections) {
+    my @connections = $ipsecDB->connections;    #you need to set some keys with a type 'connections'
+
+    foreach my $ipsecprop (@connections) 
+    {
         
-     # first we verify if IPSec is enabled for the connection (Not good according to this : http://wiki.contribs.org/Esmith::DB#get_prop)
-     my $ipsecstatus = $ipsecDB->prop("Status") || "disabled";
-    
-     # If not enabled, go to next record ? How ?
-     # Could do
-     if ($ipsecDB->prop("Status") || "disabled") {
-        $OUT .= "# $ipsec{name} is disabled\n";
-    }
-    else {
-    
-    
+         # first we verify if IPSec is enabled for the connection (Not good according to this : http://wiki.contribs.org/Esmith::DB#get_prop)
+         my $ipsecstatus = $configDB->get_prop("ipsec","Status") || "disabled";
+         my $name = $ipsecDB->get_prop("$ipsecprop","name");
+
+         return "# $name is disabled" unless ($ipsecstatus eq enabled);
+
+         my $connectionname = $ipsecDB->get_prop("$ipsecprop","name")|| '';
             
-         my $connectionname = $ipsec->prop("name");
-            
-         $OUT .= "conn $connectionname\n"; #Is this right ?
+         $OUT .= "conn $connectionname\n";
          
          
          # These should be from $configDB-> ipsec
@@ -45,32 +31,56 @@
          # Not templated this - maybe later with L2TPD
          $OUT .= "    authby=secret\n";
          
-         # We currently use a password file but this could be integrated with other authent later
+         # We currently use a password file but this could be integrated with other authent later       
+         my $type = $configDB->get_prop("ipsec","type")||'';#I take from the configuration db, not sure that it what you want
          $OUT .= "    type=$type\n"; 
          
          # These should be from $configDB-> ipsec unless they exist in ipsec_connections
-         $OUT .= "    ikelifetime=$ikelifetime";
+         
+         #well not easy to do, that should be done by another way after, now we take only in  the ipsec database       
+         my $ikelifetime = $ipsecDB->get_prop("$ipsecprop",'ikelifetime')||'';
+         $OUT .= "    ikelifetime=$ikelifetime\n";
+         
+         my $keylife = $ipsecDB->get_prop("$ipsecprop",'keylife')||'';
          $OUT .= "    keylife=$keylife\n";
-         $OUT .= "    pfs=$ipsec{pfs}\n" || "$pfs\n";
-         $OUT .= "    dpdaction=$ipsec{dpdaction}\n" || "$dpdaction\n";
-         $OUT .= "    dpddelay=$ipsec{dpddelay}\n" || "$dpddelay\n";
-         $OUT .= "    dpdtimeout=$ipsec{dpdtimeout}\n" || "$dpdtimeout\n";
+         
+         my $pfs= $ipsecDB->get_prop("$ipsecprop",'pfs')||'';         
+         $OUT .= "    pfs=$pfs\n";
+         
+         my $dpdaction=$ipsecDB->get_prop("$ipsecprop",'dpdaction')||'';
+         $OUT .= "    dpdaction=$dpdaction\n";
+         
+         my $dpddelay = $ipsecDB->get_prop("$ipsecprop",'dpddelay')||'';
+         $OUT .= "    dpddelay=$dpddelay\n";
+         
+         my $dpdtimeout = $ipsecDB->get_prop("$ipsecprop",'dpdtimeout')||'';
+         $OUT .= "    dpdtimeout=$dpdtimeout\n";
   
          # This always comes from $config-> ipsec setting and shoudl be %defaultroute
          # How do I get it from the config db ?
-         
+         my $left = $configDB->get_prop("ipsec",'left')||''; #i take from configuration database
          $OUT .= "    left=$left\n";
 
 
 
-    # These ONLY come from the ipsec_configurations db
-         $OUT .= "    leftsourceip=$ipsec{leftsourceip}";
+         # These ONLY come from the ipsec_configurations db
+         my $leftsourceip = $ipsecDB->get_prop("$ipsecprop",'leftsourceip')||'';
+         $OUT .= "    leftsourceip=$leftsourceip\n";
+         
+         my $leftsub = $ipsecDB->get_prop("$ipsecprop",'leftsub')||'';
          $OUT .= "    leftsubnet=$leftsub\n";
-         $OUT .= "    rightsubnet=$ipsec{rightsubnet}";
-         $OUT .= "    right=$ipsec{right}";
-         $OUT .= "    rightip=$ipsec{rightip}";
-         $OUT .= "    rightsubnet=$ipsec{rightsubnet}";
+         
+         my $rightsubnet = $ipsecDB->get_prop("$ipsecprop",'rightsubnet')||'';
+         $OUT .= "    rightsubnet=$rightsubnet\n";
+         
+         my $right = $ipsecDB->get_prop("$ipsecprop",'right')||'';
+         $OUT .= "    right=$right\n";
+         
+         my $rightip = $ipsecDB->get_prop("$ipsecprop",'rightip')||'';
+         $OUT .= "    rightip=$rightip\n";
+         
+         my $rightsubnet = $ipsecDB->get_prop("$ipsecprop",'rightsubnet')||'';
+         $OUT .= "    rightsubnet=$rightsubnet\n";
          $OUT .= "\n";
-        }
     }
 }
