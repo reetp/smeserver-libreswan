@@ -1,6 +1,32 @@
 #Per connection settings like this
 
-# connection=name|vps-to-voip | leftip|192.168.99.1 | leftsubnet|255.255.255.0 | rightip|222.222.222.222 | rightsubnet|10.0.0.0/24 | auto|start/add  | pfs|yes/no |  dpdaction|restart | dpddelay|30 | dpdtimeout|10 | passwd|MyPasswd
+ipsec_connections configs
 
-connection=name|vps-to-voip|leftip|192.168.99.1|leftsubnet|255.255.255.0|rightip|222.222.222.222|rightsubnet|10.0.0.0/24|auto|start/add|pfs|yes|dpdaction|restart|dpddelay|30|dpdtimeout|10|passwd|MyPasswd
+db ipsec_connections set workToVoip ipsec leftsourceip 192.168.10.100 leftsubnet 192.168.10.100/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
 
+
+[root@test]# db ipsec_connections show
+workToVoip=ipsec
+    leftsourceip=192.168.10.100
+    leftsubnet=192.168.10.100/24
+    passwd=MyPassWd
+    right=1.2.3.4
+    rightsubnet=10.0.0.0/24
+
+
+
+Config Defaults
+
+config set ipsec service status disabled left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
+
+[root@test]# config show ipsec
+ipsec=service
+    auto=start
+    dpdaction=restart
+    dpddelay=30
+    dpdtimeout=10
+    ikelifetime=28800s
+    keylife=3600s
+    left=%defaultroute
+    pfs=yes
+    status=disabled
