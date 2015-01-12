@@ -1,0 +1,78 @@
+#!/usr/bin/perl -w
+{
+    use strict;
+    use warnings;
+    use esmith::NetworksDB;
+    use esmith::ConfigDB;
+    #    use Net::IPv4Addr qw(ipv4_in_network ipv4_parse);
+    #    use esmith::util::network qw(isValidIP);
+
+    my $configDB = esmith::ConfigDB->open_ro or die "can't open Config DB";
+
+    # Which one of the following two lines should you use ?
+
+    my $ipsecDB = esmith::DB->open_ro('ipsec_connections') or die esmith::DB->error;
+    
+    my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections');
+
+    # Here we start
+    
+    # Should get all config db ipec settings here so we can use further down but damned if I know :
+    my %props = $configDB->get(ipsec)->props;
+    
+    # This should get all the connections in an array
+    my @connections = $ipsecDB->connections;
+
+    foreach my $ipsec (@connections) {
+        
+     # first we verify if IPSec is enabled for the connection (Not good according to this : http://wiki.contribs.org/Esmith::DB#get_prop)
+     my $ipsecstatus = $ipsecDB->prop("Status") || "disabled";
+    
+     # If not enabled, go to next record ? How ?
+     # Could do
+     if ($ipsecDB->prop("Status") || "disabled") {
+        $OUT .= "# $ipsec{name} is disabled\n";
+    }
+    else {
+    
+    
+            
+         my $connectionname = $ipsec->prop("name");
+            
+         $OUT .= "conn $connectionname\n"; #Is this right ?
+         
+         
+         # These should be from $configDB-> ipsec
+         
+         # Not templated this - maybe later with L2TPD
+         $OUT .= "    authby=secret\n";
+         
+         # We currently use a password file but this could be integrated with other authent later
+         $OUT .= "    type=$type\n"; 
+         
+         # These should be from $configDB-> ipsec unless they exist in ipsec_connections
+         $OUT .= "    ikelifetime=$ikelifetime";
+         $OUT .= "    keylife=$keylife\n";
+         $OUT .= "    pfs=$ipsec{pfs}\n" || "$pfs\n";
+         $OUT .= "    dpdaction=$ipsec{dpdaction}\n" || "$dpdaction\n";
+         $OUT .= "    dpddelay=$ipsec{dpddelay}\n" || "$dpddelay\n";
+         $OUT .= "    dpdtimeout=$ipsec{dpdtimeout}\n" || "$dpdtimeout\n";
+  
+         # This always comes from $config-> ipsec setting and shoudl be %defaultroute
+         # How do I get it from the config db ?
+         
+         $OUT .= "    left=$left\n";
+
+
+
+    # These ONLY come from the ipsec_configurations db
+         $OUT .= "    leftsourceip=$ipsec{leftsourceip}";
+         $OUT .= "    leftsubnet=$leftsub\n";
+         $OUT .= "    rightsubnet=$ipsec{rightsubnet}";
+         $OUT .= "    right=$ipsec{right}";
+         $OUT .= "    rightip=$ipsec{rightip}";
+         $OUT .= "    rightsubnet=$ipsec{rightsubnet}";
+         $OUT .= "\n";
+        }
+    }
+}
