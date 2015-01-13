@@ -8,4 +8,3 @@ S99ipsec -> /etc/rc.d/init.d/e-smith-service
 
 # New ipsec DB for connections
 
-
