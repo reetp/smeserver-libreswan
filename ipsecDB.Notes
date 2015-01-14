@@ -8,7 +8,7 @@ db ipsec_connections set workToVoip ipsec status disabled leftsourceip 192.168.1
 [root@test]# db ipsec_connections show
 workToVoip=ipsec
     leftsourceip=192.168.10.100
-    leftsubnet=192.168.10.100/24
+    leftsubnet=192.168.10.0/24
     passwd=MyPassWd
     right=1.2.3.4
     rightsubnet=10.0.0.0/24
