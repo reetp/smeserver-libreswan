@@ -21,7 +21,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 
-* Tue Jan 13 2015 John Crsip <jcrisp@safeandsoundit.co.uk> 0.1-1
+* Tue Jan 13 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.1-1
 - initial release
 
 %prep
@@ -30,24 +30,18 @@ Libreswan is a free software implementation of the most widely supported and sta
 %build
 perl createlinks
 
-#all below need to be create in the src.rpm with folder&file
-#see https://github.com/stephdl/smeserver-sogo/tree/sme9/root/etc/e-smith/db/configuration/defaults/sogod
-#mkdir -p          root/etc/e-smith/db/configuration/defaults/ipsec
-#echo "service"  > root/etc/e-smith/db/configuration/defaults/ipsec/type
-#echo "disabled"  > root/etc/e-smith/db/configuration/defaults/ipsec/status
+mkdir -p          root/etc/e-smith/db/configuration/defaults/ipsec
+echo "service"  > root/etc/e-smith/db/configuration/defaults/ipsec/type
+echo "disabled"  > root/etc/e-smith/db/configuration/defaults/ipsec/status
 
 
 %install
-#here you are doing a 'cd root', so all rpm files have to be in a root folder
-#see https://github.com/stephdl/smeserver-nfs, it is a good pratice
 rm -rf $RPM_BUILD_ROOT
 (cd root ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
 rm -f %{name}-%{version}-filelist
 /sbin/e-smith/genfilelist $RPM_BUILD_ROOT \
 echo "%doc COPYING" >> %{name}-%{version}-filelist
-#here you can define permissions and ownership if needed (if you want a script can be executable)
-#see http://wiki.contribs.org/.spec_file_notes
-#and specially http://wiki.contribs.org/.spec_file_notes#.25install
+
 
 %clean
 cd ..
@@ -59,22 +53,28 @@ rm -rf %{name}-%{version}
 %pre
 %preun
 %post
-#here you have to create an event in the createlink, nothing in %post & postun
-#see http://wiki.contribs.org/Createlinks_example_script & http://wiki.contribs.org/Esmith::Build::CreateLinks
-#all expand, creation of service has to be done with the createlinks
-#/sbin/e-smith/expand-template /etc/ipsec.conf
-#/sbin/e-smith/expand-template /etc/ipsec.d/ipsec.conf
-#/sbin/e-smith/expand-template /etc/ipsec.d/ipsecrets.conf
-#/sbin/e-smith/expand-template /etc/ipsec.conf
-#/sbin/e-smith/expand-template /etc/rc.d/init.d/masq
+/sbin/e-smith/expand-template /etc/ipsec.conf
+/sbin/e-smith/expand-template /etc/ipsec.d/ipsec.conf
+/sbin/e-smith/expand-template /etc/ipsec.d/ipsecrets.conf
+/sbin/e-smith/expand-template /etc/ipsec.conf
+/sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 
-#/bin/rm -f /etc/cron.daily/hylafax
-#/bin/touch /var/spool/hylafax/etc/xferfaxlog
+echo "
+# Correct ICMP Redirect issues with LibreSwan\n
+for each in /proc/sys/net/ipv4/conf/*; do\n
+    echo 0 > $each/accept_redirects\n
+    echo 0 > $each/send_redirects\n
+    echo 0 > $each/rp_filter\n
+    done\n
+    echo 1 >  /proc/sys/net/core/xfrm_larval_drop
+#  End ICMP redirect\n" >> rc.local
 
-#well that it is ok, you can give instructions
 echo "see http://wiki.contribs.org/IPSEC"
 
 %postun
-#/sbin/e-smith/expand-template /etc/inittab
-#/sbin/init q
+sed --in-place=.bak '/# Correct ICMP/,/# End ICMP/d' rc.local
+echo "rc.local backed up to rc.local.bak"
+/sbin/e-smith/expand-template /etc/rc.d/init.d/masq
+/sbin/e-smith/expand-template /etc/inittab
+/sbin/init q
 
