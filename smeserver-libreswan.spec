@@ -56,7 +56,6 @@ rm -rf %{name}-%{version}
 /sbin/e-smith/expand-template /etc/ipsec.conf
 /sbin/e-smith/expand-template /etc/ipsec.d/ipsec.conf
 /sbin/e-smith/expand-template /etc/ipsec.d/ipsecrets.conf
-/sbin/e-smith/expand-template /etc/ipsec.conf
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 
 echo "
@@ -77,4 +76,3 @@ echo "rc.local backed up to rc.local.bak"
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 /sbin/e-smith/expand-template /etc/inittab
 /sbin/init q
-
