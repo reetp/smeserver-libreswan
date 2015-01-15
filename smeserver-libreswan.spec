@@ -11,7 +11,7 @@ Group: SMEserver/addon
 Source: %{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
-BuildRequires: e-smith-devtools >= 2.0
+BuildRequires: e-smith-devtools
 Requires:  e-smith-release >= 8.0
 Requires:  libreswan >= 3.12
 AutoReqProv: no
@@ -39,7 +39,7 @@ echo "disabled"  > root/etc/e-smith/db/configuration/defaults/ipsec/status
 rm -rf $RPM_BUILD_ROOT
 (cd root ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
 rm -f %{name}-%{version}-filelist
-/sbin/e-smith/genfilelist $RPM_BUILD_ROOT \
+/sbin/e-smith/genfilelist $RPM_BUILD_ROOT > %{name}-%{version}-filelist
 echo "%doc COPYING" >> %{name}-%{version}-filelist
 
 

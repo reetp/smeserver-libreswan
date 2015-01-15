@@ -1,0 +1,10 @@
+#! /usr/bin/perl -w
+
+use esmith::Build::CreateLinks qw(:all);
+my $event;
+
+# Runlevel init links.
+service_link_enhanced("ipsec", "S95", "7");
+service_link_enhanced("ipsec", "K21", "6");
+service_link_enhanced("ipsec", "K21", "0");
+service_link_enhanced("ipsec", "K21", "1");
