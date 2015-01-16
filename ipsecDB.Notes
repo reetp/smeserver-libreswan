@@ -1,3 +1,9 @@
+Server must be servergateway mode
+
+config show SystemMode
+SystemMode=servergateway
+
+
 #Per connection settings like this
 
 ipsec_connections configs

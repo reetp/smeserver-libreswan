@@ -1,5 +1,5 @@
 %define name smeserver-libreswan
-%define version 0.1
+%define version 0.2
 %define release 1
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
@@ -20,6 +20,10 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standarized VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+
+* Fri Jan 16 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.2-1
+- remove rc.local modifications
+- add /etc/sysctl.conf patches
 
 * Thu Jan 15 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.1-1
 - initial release
@@ -57,22 +61,11 @@ rm -rf %{name}-%{version}
 /sbin/e-smith/expand-template /etc/ipsec.d/ipsec.conf
 /sbin/e-smith/expand-template /etc/ipsec.d/ipsecrets.conf
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
-
-echo "
-# Correct ICMP Redirect issues with LibreSwan\n
-for each in /proc/sys/net/ipv4/conf/*; do\n
-    echo 0 > $each/accept_redirects\n
-    echo 0 > $each/send_redirects\n
-    echo 0 > $each/rp_filter\n
-    done\n
-    echo 1 >  /proc/sys/net/core/xfrm_larval_drop
-#  End ICMP redirect\n" >> rc.local
+/sbin/e-smith/expand-template /etc/sysctl.conf
 
 echo "see http://wiki.contribs.org/IPSEC"
 
 %postun
-sed --in-place=.bak '/# Correct ICMP/,/# End ICMP/d' rc.local
-echo "rc.local backed up to rc.local.bak"
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 /sbin/e-smith/expand-template /etc/inittab
 /sbin/init q
