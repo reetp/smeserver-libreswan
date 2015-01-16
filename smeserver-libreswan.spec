@@ -21,7 +21,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 
-* Tue Jan 13 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.1-1
+* Thu Jan 15 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.1-1
 - initial release
 
 %prep
