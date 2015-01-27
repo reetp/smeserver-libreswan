@@ -28,10 +28,27 @@ my $db = esmith::ConfigDB->open or die "Couldn't open ConfigDB\n";
 my $event = $ARGV[0];
 
 my $function = $event;
-$function =~ s/yum-//;
+$function =~ s/ipsec-//;
 
 die "Unknown function $event\n" 
     unless ($event =~ /stop|restart|password-update/);
 
     
     
+# Restart all
+
+# Check each connection
+
+# Need to decide
+
+# Check connection status enabled or disabled
+
+# for each connection
+
+# Check running status
+
+# if running and disabled stop
+# if running and enabled leave
+# if stopped and disabled leave
+# if stopped and enabled start
+
