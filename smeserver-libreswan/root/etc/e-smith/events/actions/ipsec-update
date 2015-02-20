@@ -18,6 +18,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 #----------------------------------------------------------------------
 
+# Note that we do not need to use the init ipsec script - we can start and
+# stop directly using /usr/sbin/ipsec which will call the init script
+
 use strict;
 use warnings;
 use esmith::ConfigDB;
@@ -32,21 +35,21 @@ my $dbKey = 'ipsec';
 # If the service is set disabled then make sure it is stopped
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
 {
-	exec("/etc/init.d/ipsec service stop") or die("A problem occurred stopping ipsec");
-	exit 0
+	exec("/usr/sbin/ipsec stop >/dev/null") or die("A problem occurred stopping ipsec");
+	exit 0;
 }
 
 # If the service is set to enabled AND running (then check the connections)
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 {
 
-	$status = (`ps ax | grep -v grep | grep ipsec;`);
+	my $status = (`ps ax | grep -v grep | grep pluto;`);
 
 	#If the service is running
 	if ( $status =~ m/ipsec/ )
 	{
 		# Lets do some shit
-		# print "ipsec is running!\n";
+		print "ipsec is running!\n";
 		my @connections = $ipsecDB->keys;
 
 		foreach my $ipsecprop (@connections)
@@ -54,8 +57,10 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 			my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 			if ( $ipsecstatus eq "enabled" )
 			{
-				exec "/etc/init.d/ipsec auto --rereadsecrets";
-				exec "/etc/init.d/ipsec auto --replace $ipsecprop";
+				print "reRead Secrets\n";
+				exec ("/usr/sbin/ipsec auto --rereadsecrets") or die("A problem occurred rereading secrets");
+				print "restart connection $ipsecprop\n";
+				exec ("/usr/sbin/ipsec auto --replace $ipsecprop"); or die("A problem occurred restarting $ipsecprop")
 			}
 		}
 
@@ -63,7 +68,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 	#If it isn't running then start it up
 	else
 	{
-		exec("/etc/init.d/ipsec service start") or die("A problem occurred starting ipsec");
+		print "ipsec isn't running so start ipsec\n";
+		exec("/usr/sbin/ipsec start") or die("A problem occurred starting ipsec");
 		# print "ipsec isnt running\n\n";
 	}
 
