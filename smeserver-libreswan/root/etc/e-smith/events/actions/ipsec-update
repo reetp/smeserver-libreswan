@@ -46,7 +46,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 	my $status = (`ps ax | grep -v grep | grep pluto`);
 
 	#If the service is running
-	if ( $status =~ m/ipsec/ )
+	if ( $status =~ m/pluto/ )
 	{
 		# Lets do some shit
 		print "ipsec is running!\n";
@@ -81,7 +81,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
 	}
 	# If it isn't running then start it up
-	# Auto connections start themselves. Added connectoins wait
+	# Auto connections start themselves. Added connections wait
 	else
 	{
 		print "ipsec isn't running so start ipsec\n";
