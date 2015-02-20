@@ -28,31 +28,54 @@ my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections')
 
 my $dbKey = 'ipsec';
 
-# What CL event calls us ?
-my $event = $ARGV[0];
 
-my $function = $event;
-$function =~ s/ipsec-//;
-
-die "Unknown function $event\n"
-  unless ( $event =~ /stop|restart|password-update/ );
-
-# This should get all the connections in an array
-
-my @connections = $ipsecDB->keys;
-
-foreach my $ipsecprop (@connections)
+# If the service is set disabled then make sure it is stopped
+if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
 {
-	my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
-	if ( $ipsecstatus eq "enabled" )
-	{
-
-	   #         my $leftsubnet = $ipsecDB->get_prop("$ipsecprop",'leftsubnet');
-	   #         $virtual_private .= "%v4:$leftsubnet,"
-	}
+	exec("/etc/init.d/ipsec service stop") or die("A problem occurred stopping ipsec");
+	exit 0
 }
 
+# If the service is set to enabled AND running (then check the connections)
+if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
+{
+
+	$status = (`ps ax | grep -v grep | grep ipsec;`);
+
+	#If the service is running
+	if ( $status =~ m/ipsec/ )
+	{
+		# Lets do some shit
+		# print "ipsec is running!\n";
+		my @connections = $ipsecDB->keys;
+
+		foreach my $ipsecprop (@connections)
+		{
+			my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
+			if ( $ipsecstatus eq "enabled" )
+			{
+				exec "/etc/init.d/ipsec auto --rereadsecrets";
+				exec "/etc/init.d/ipsec auto --replace $ipsecprop";
+			}
+		}
+
+	}
+	#If it isn't running then start it up
+	else
+	{
+		exec("/etc/init.d/ipsec service start") or die("A problem occurred starting ipsec");
+		# print "ipsec isnt running\n\n";
+	}
+
+}
+
+
 # Restart all
+
+# exec("/etc/init.d/ipsec service restart") or die("A problem occurred execing ipsec");
+
+
+# exec("/etc/init.d/ipsec service stop")  or die("A problem occurred execing ipsec");
 
 # Check each connection
 
@@ -69,3 +92,27 @@ foreach my $ipsecprop (@connections)
 # if stopped and disabled leave
 # if stopped and enabled start
 
+#exec /sbin/ e-smith / config delprop pptpd Interfaces
+#  exec( "/sbin/e-smith/dynamic-dns/$service",
+#		$ipaddress->value, $account, $password, $domain )
+#
+#  exec( "/bin/mt", "-f", $device, "eject" );
+#die("A problem occurred execing mt");
+#
+#( "/sbin/shutdown", qw(-h now) ) or die "Can't exec shutdown: $!";
+#
+#exec /etc/init . d / ipsec auto-- rereadsecrets
+#
+#  ipsec auto-- replace HomeToTest
+
+
+# If we CL arguments we can add this....
+
+## What CL event calls us ? If we are called with an argument
+#my $event = $ARGV[0];
+#
+#my $function = $event;
+#$function =~ s/ipsec-//;
+#
+#die "Unknown function $event\n"
+#  unless ( $event =~ /stop|restart|password-update/ );
