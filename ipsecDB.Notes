@@ -37,3 +37,14 @@ ipsec=service
     left=%defaultroute
     pfs=yes
     status=disabled
+
+
+Any setting in the db ipsec_connections will override the defualt settings in the config db (or should !) If there is no setting the system will set a default.
+
+There is now a new action script called ipsec-update.
+
+Make your changes and then signal-event ipsec-update to action them.
+
+Note that as it is very difficult currently to detect connections that are up (something libreswan are working on) the script does not try to detect connection status so it will reset them currently.
+
+Any question then please ask at forums.contribs.org in the Contribs sections.
