@@ -47,4 +47,7 @@ Make your changes and then signal-event ipsec-update to action them.
 
 Note that as it is very difficult currently to detect connections that are up (something libreswan are working on) the script does not try to detect connection status so it will reset them currently.
 
+Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established"
+https://lists.libreswan.org/pipermail/swan/2015/001083.html
+
 Any question then please ask at forums.contribs.org in the Contribs sections.
