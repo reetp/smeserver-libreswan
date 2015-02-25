@@ -1,4 +1,4 @@
-Server must be servergateway mode
+Server must be servergateway mode - need the action script to check this
 
 config show SystemMode
 SystemMode=servergateway
