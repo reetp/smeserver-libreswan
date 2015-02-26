@@ -25,6 +25,9 @@ Config Defaults
 
 config set ipsec service status disabled connection type tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
 
+Also can set the firewall ports and dispense with the masq fragment later.
+http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
+
 [root@test ipsec.d]# config show ipsec
 ipsec=service
     auto=start
