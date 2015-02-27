@@ -6,6 +6,17 @@
 
     my $configDB = esmith::ConfigDB->open_ro or die ("can't open Config DB");
 
+    my $systemMode = $configDB->get("SystemMode")->value;
+
+    if ($systemMode ne 'servergateway')
+    {
+    $OUT .= "# System not in Server Gateway mode\n";
+    }
+
+
+	else
+	{
+
     my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections') or die ("cant connect to ipsec database");
 
     my $dbKey = 'ipsec';
@@ -36,6 +47,13 @@
          # Use connection value if it exists, if not use generic db value
          my $auto = $ipsecDB->get_prop($ipsecprop,'auto')||$configDB->get_prop($dbKey,'auto')||'start';
          $OUT .= "    auto=$auto\n";
+
+		 # Set the Phase one and Phase two default strengths - these are set to aes
+		 my $ike = $ipsecDB->get_prop($ipsecprop,'ike')||$configDB->get_prop($dbKey,'ike')||'aes-sha';
+		 $OUT .= "    ike=$ike\n";
+
+		 my $phase2 = $ipsecDB->get_prop($ipsecprop,'phase2')||$configDB->get_prop($dbKey,'phase2')||'aes-sha1';
+		 $OUT .= "    phase2alg=$phase2\n";
 
          # Careful - property 'type' has a special meaning in configDB and returns 'service'
 
@@ -82,5 +100,6 @@
          $OUT .= "    right=$right\n";
 
 
+    }
     }
 }

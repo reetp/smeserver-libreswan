@@ -1,3 +1,4 @@
+
 {
 	use strict;
 	use warnings;
@@ -5,12 +6,22 @@
 
 	my $configDB = esmith::ConfigDB->open_ro or die("can't open Config DB");
 
-	my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections')
-	  or die("cant connect to ipsec database");
+    my $systemMode = $configDB->get("SystemMode")->value;
+
+    if ($systemMode ne 'servergateway')
+    {
+    $OUT .= "# System not in Server Gateway mode\n";
+    }
+
+
+	else
+	{
+
+	my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections') or die("cant connect to ipsec database");
 
 	my $dbKey = 'ipsec';
 
-	# Generic setup file
+# Generic setup file
 
 # A standard config is included in the RPM but we need to generate a new one so we can modify settings
 
@@ -40,9 +51,10 @@
 		}
 	}
 
-	# Remove last charater ','
+# Remove last charater ','
 	chop($virtual_private);
 	$OUT .= "$virtual_private\n";
 	$OUT .= "\n";
 	$OUT .= "include /etc/ipsec.d/*.conf\n";
+	}
 }

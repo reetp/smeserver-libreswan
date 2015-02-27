@@ -60,12 +60,12 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 			# If we are enabled
 			if ( $ipsecstatus eq "enabled" )
 			{
-				print "reRead Secrets\n";
+				print "reReading Secrets\n";
 
 				# system ("/usr/sbin/ipsec auto --rereadsecrets") or die("A problem occurred rereading secrets");
 				my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
 
-				print "restart connection $ipsecprop\n";
+				print "Restarting connection $ipsecprop\n";
 
 				#system ("/usr/sbin/ipsec auto --replace $ipsecprop") or die("A problem occurred restarting $ipsecprop");
 				my $restart = qx(/usr/sbin/ipsec auto --replace $ipsecprop);

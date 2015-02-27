@@ -1,11 +1,5 @@
 Note there are several serious bugs in this. It DOES work, but needs a lot of refinement !
 
-Server must be servergateway mode - need the action script to check this
-
-config show SystemMode
-SystemMode=servergateway
-
-
 #Per connection settings like this
 
 ipsec_connections configs
@@ -26,6 +20,15 @@ workToVoip=ipsec
 Config Defaults
 
 config set ipsec service status disabled connection type tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
+
+Additional db entries
+
+https://libreswan.org/man/ipsec.conf.5.html
+
+ike = Some examples are ike=3des-sha1,aes-sha1, ike=aes, ike=aes128-md5;modp2048, ike=aes128-sha1;dh22, ike=3des-md5;modp1024,aes-sha1;modp1536 or ike=modp1536
+phase2alg = aes-sha1 | similar to above
+
+Note there is no DB entry for phase2 - Libreswan defaults to ESP so unless you use AH (not recommended) leave as is
 
 ----------------------------------------------------------
 
@@ -58,7 +61,7 @@ ipsec=service
     status=disabled
 
 
-Any setting in the db ipsec_connections will override the defualt settings in the config db (or should !) If there is no setting the system will set a default.
+Any setting in the db ipsec_connections will override the default settings in the config db (or should !) If there is no setting the system will set a default.
 
 There is now a new action script called ipsec-update.
 
