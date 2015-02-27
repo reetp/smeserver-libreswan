@@ -1,3 +1,5 @@
+Note there are several serious bugs in this. It DOES work, but needs a lot of refinement !
+
 Server must be servergateway mode - need the action script to check this
 
 config show SystemMode
