@@ -4,7 +4,7 @@
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
-Release: %{release}%{?dist}
+Release: %{release}
 License: GNU GPL version 2
 URL: http://libreswan.org/
 Group: SMEserver/addon
