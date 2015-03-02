@@ -25,12 +25,12 @@
 
 # A standard config is included in the RPM but we need to generate a new one so we can modify settings
 
-	$OUT .= "config setup";
-	$OUT .= "    protostack=netkey";
-	$OUT .= "    #plutodebug=none";
-	$OUT .= "    #klipsdebug=none";
-	$OUT .= "    dumpdir=/var/run/pluto/";
-	$OUT .= "    nat_traversal=yes";
+	$OUT .= "config setup\n";
+	$OUT .= "    protostack=netkey\n";
+	$OUT .= "    #plutodebug=none\n";
+	$OUT .= "    #klipsdebug=none\n";
+	$OUT .= "    dumpdir=/var/run/pluto/\n";
+	$OUT .= "    nat_traversal=yes\n";
 
 	# This should get all the connections in an array
 
