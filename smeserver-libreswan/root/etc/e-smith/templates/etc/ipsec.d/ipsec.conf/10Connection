@@ -27,10 +27,12 @@
 
     foreach my $ipsecprop (@connections)
     {
+     if ($ipsecDB->get_prop($ipsecprop,'type') eq 'ipsec')
+     {
 
          # first we verify if IPSec is enabled for the connection
 
-         my $ipsecstatus = $ipsecDB->get_prop("$ipsecprop",'status') || "disabled";
+         my $ipsecstatus = $ipsecDB->get_prop($ipsecprop,'status') || 'disabled';
 
          return "# $ipsecprop is disabled\n" unless $ipsecstatus eq "enabled";
 
@@ -69,37 +71,41 @@
          my $keylife = $ipsecDB->get_prop($ipsecprop,'keylife')||$configDB->get_prop($dbKey,'keylife')||'3600s';
          $OUT .= "    keylife=$keylife\n";
 
-         my $dpdaction=$ipsecDB->get_prop("$ipsecprop",'dpdaction')||$configDB->get_prop($dbKey,'dpdaction')||'restart';
+         my $dpdaction=$ipsecDB->get_prop($ipsecprop,'dpdaction')||$configDB->get_prop($dbKey,'dpdaction')||'restart';
          $OUT .= "    dpdaction=$dpdaction\n";
 
-         my $dpddelay = $ipsecDB->get_prop("$ipsecprop",'dpddelay')||$configDB->get_prop($dbKey,'dpddelay')||'30';
+         my $dpddelay = $ipsecDB->get_prop($ipsecprop,'dpddelay')||$configDB->get_prop($dbKey,'dpddelay')||'30';
          $OUT .= "    dpddelay=$dpddelay\n";
 
-         my $dpdtimeout = $ipsecDB->get_prop("$ipsecprop",'dpdtimeout')||$configDB->get_prop($dbKey,'dpdtimeout')||'10';
+         my $dpdtimeout = $ipsecDB->get_prop($ipsecprop,'dpdtimeout')||$configDB->get_prop(,'dpdtimeout')||'10';
          $OUT .= "    dpdtimeout=$dpdtimeout\n";
 
          # default to yes unless overridden in the connection db
-         my $pfs= $ipsecDB->get_prop("$ipsecprop",'pfs')||'yes';
+         my $pfs= $ipsecDB->get_prop($ipsecprop,'pfs')||'yes';
          $OUT .= "    pfs=$pfs\n";
 
          # Following come from ipsecDB or configDB or hardcoded
-         my $left = $ipsecDB->get_prop("$ipsecprop",'left')||$configDB->get_prop("ipsec",'left')||'%defaultroute';
+         my $left = $ipsecDB->get_prop($ipsecprop,'left')||$configDB->get_prop($dbKey,'left')||'%defaultroute';
          $OUT .= "    left=$left\n";
 
          # These ONLY come from the ipsec_configurations db
-         my $leftsourceip = $ipsecDB->get_prop("$ipsecprop",'leftsourceip')||'';
+         my $leftsourceip = $ipsecDB->get_prop($ipsecprop,'leftsourceip')||'';
          $OUT .= "    leftsourceip=$leftsourceip\n";
 
-         my $leftsub = $ipsecDB->get_prop("$ipsecprop",'leftsubnet')||'';
+         my $leftsub = $ipsecDB->get_prop($ipsecprop,'leftsubnet')||'';
          $OUT .= "    leftsubnet=$leftsub\n";
 
-         my $rightsubnet = $ipsecDB->get_prop("$ipsecprop",'rightsubnet')||'';
+         my $rightsubnet = $ipsecDB->get_prop($ipsecprop,'rightsubnet')||'';
          $OUT .= "    rightsubnet=$rightsubnet\n";
 
-         my $right = $ipsecDB->get_prop("$ipsecprop",'right')||'';
+         my $right = $ipsecDB->get_prop($ipsecprop,'right')||'';
          $OUT .= "    right=$right\n";
-
+         }
 
     }
+    # End For
     }
+    # End Else
+
+
 }

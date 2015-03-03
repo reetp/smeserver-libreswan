@@ -38,16 +38,15 @@
 
 	$OUT .= "    virtual_private=";
 
-	my $virtual_private = '';
+	my $virtual_private = '%v4:';
 
 	foreach my $ipsecprop (@connections)
 	{
-		my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
-		  || "disabled";
+		my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 		if ( $ipsecstatus eq "enabled" )
 		{
 			my $leftsubnet = $ipsecDB->get_prop( "$ipsecprop", 'leftsubnet' );
-			$virtual_private .= "%v4:$leftsubnet,";
+			$virtual_private .= "$leftsubnet,";
 		}
 	}
 
