@@ -23,7 +23,6 @@ Libreswan is a free software implementation of the most widely supported and sta
 * Tue Mar 3 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-2
 - Load of code tidying and prep from xl2tpd
 
-
 * Fri Feb 27 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-2
 - Update action script and allow for system not in gateway mode
 - add ike and phase2alg db settings

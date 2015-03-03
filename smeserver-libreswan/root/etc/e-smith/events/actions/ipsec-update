@@ -31,11 +31,13 @@ my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections')
 
 my $dbKey = 'ipsec';
 
-
 # If the service is set disabled then make sure it is stopped
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
 {
-	exec ("/usr/sbin/ipsec stop >/dev/null") or die("A problem occurred stopping ipsec");
+	my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
+
+	#exec("/usr/sbin/ipsec stop >/dev/null")
+	# or die("A problem occurred stopping ipsec");
 	exit 0;
 }
 
@@ -45,29 +47,30 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
 	my $status = (`ps ax | grep -v grep | grep pluto`);
 
-	#If the service is running
+#If the service is running
 	if ( $status =~ m/pluto/ )
 	{
-		# Lets do some shit
+# Lets do some shit
 		print "ipsec is running!\n";
 		my @connections = $ipsecDB->keys;
 
 		foreach my $ipsecprop (@connections)
 		{
-			#Check the individual connection status
-			my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
+#Check the individual connection status
+			my $ipsecstatus =
+			  $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 
-			# If we are enabled
+# If we are enabled
 			if ( $ipsecstatus eq "enabled" )
 			{
 				print "reReading Secrets\n";
 
-				# system ("/usr/sbin/ipsec auto --rereadsecrets") or die("A problem occurred rereading secrets");
+# system ("/usr/sbin/ipsec auto --rereadsecrets") or die("A problem occurred rereading secrets");
 				my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
 
 				print "Restarting connection $ipsecprop\n";
 
-				#system ("/usr/sbin/ipsec auto --replace $ipsecprop") or die("A problem occurred restarting $ipsecprop");
+#system ("/usr/sbin/ipsec auto --replace $ipsecprop") or die("A problem occurred restarting $ipsecprop");
 				my $restart = qx(/usr/sbin/ipsec auto --replace $ipsecprop);
 			}
 
@@ -80,64 +83,18 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 		}
 
 	}
-	# If it isn't running then start it up
-	# Auto connections start themselves. Added connections wait
+
+# If it isn't running then start it up
+# Auto connections start themselves. Added connections wait
 	else
 	{
 		print "ipsec isn't running so start ipsec\n";
-		exec ("/usr/sbin/ipsec start") or die("A problem occurred starting ipsec");
+		my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
+
+		#      or die("A problem occurred starting ipsec");
 		exit 0;
 	}
 
 }
 
 exit(0);
-
-
-
-# Restart all
-
-# exec("/etc/init.d/ipsec service restart") or die("A problem occurred execing ipsec");
-
-
-# exec("/etc/init.d/ipsec service stop")  or die("A problem occurred execing ipsec");
-
-# Check each connection
-
-# Need to decide
-
-# Check connection status enabled or disabled
-
-# for each connection
-
-# Check running status
-
-# if running and disabled stop
-# if running and enabled leave
-# if stopped and disabled leave
-# if stopped and enabled start
-
-#exec /sbin/ e-smith / config delprop pptpd Interfaces
-#  exec( "/sbin/e-smith/dynamic-dns/$service",
-#		$ipaddress->value, $account, $password, $domain )
-#
-#  exec( "/bin/mt", "-f", $device, "eject" );
-#die("A problem occurred execing mt");
-#
-#( "/sbin/shutdown", qw(-h now) ) or die "Can't exec shutdown: $!";
-#
-#exec /etc/init . d / ipsec auto-- rereadsecrets
-#
-#  ipsec auto-- replace HomeToTest
-
-
-# If we CL arguments we can add this....
-
-## What CL event calls us ? If we are called with an argument
-#my $event = $ARGV[0];
-#
-#my $function = $event;
-#$function =~ s/ipsec-//;
-#
-#die "Unknown function $event\n"
-#  unless ( $event =~ /stop|restart|password-update/ );
