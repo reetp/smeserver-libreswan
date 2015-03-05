@@ -4,6 +4,14 @@ Note there are several serious bugs in this. It DOES work, but needs a lot of re
 
 ipsec_connections configs
 
+Note that settings in the main config db only get reread if you restart ipsec.
+
+Those on a per connection basis will get reread when a connection gets restarted / called via ipsec-update.
+
+What we SHOULD do is check if the main config has changed and run a ipsec restart if they have.
+
+db settings
+
 db ipsec_connections set workToVoip ipsec status disabled leftsourceip 192.168.10.100 leftsubnet 192.168.10.100/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
 
 
@@ -19,7 +27,7 @@ workToVoip=ipsec
 
 Config Defaults
 
-config set ipsec service status disabled connection type tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
+config set ipsec service status disabled connectiontype tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
 
 Additional db entries
 

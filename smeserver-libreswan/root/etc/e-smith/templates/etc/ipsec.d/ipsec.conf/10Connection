@@ -79,11 +79,13 @@
             || 'tunnel';
           $OUT .= "    type=$connectiontype\n";
 
+# mtu can only be set per connection
          my $mtu =
                $ipsecDB->get_prop( $ipsecprop, 'mtu' )
-            || $configDB->get_prop( $dbKey, 'mtu' )
             || '';
+            unless ($mtu eq '') {
           $OUT .= "    mtu=$mtu\n";
+         }
 
  # These should be from $configDB-> ipsec unless they exist in ipsec_connections
 
