@@ -20,10 +20,13 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standarized VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+
+
 * Thu Mar 5 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-4
 - Changed lots. Removed sysctl.conf template
+- Chnaged firewall template
 
-* Tue Mar 3 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-2
+* Tue Mar 3 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-3
 - Load of code tidying and prep from xl2tpd
 
 * Fri Feb 27 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-2
