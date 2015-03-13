@@ -10,4 +10,4 @@ service_link_enhanced("ipsec", "K21", "0");
 service_link_enhanced("ipsec", "K21", "1");
 
 safe_symlink("adjust", "root/etc/e-smith/events/$event/services2adjust/masq");
-event_link("ipsec-update", $event, "95");
+event_link("ipsec-update", $event, "10");

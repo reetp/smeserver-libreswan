@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.4
-%define release 4
+%define release 5
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -21,10 +21,13 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 
+* Fri Mar 13 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-5
+- Big changes again - now have PreviousState to detect changes
+- Createlinks to S10 to run after expand-templates
 
 * Thu Mar 5 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-4
 - Changed lots. Removed sysctl.conf template
-- Chnaged firewall template
+- Changed firewall template
 
 * Tue Mar 3 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-3
 - Load of code tidying and prep from xl2tpd
