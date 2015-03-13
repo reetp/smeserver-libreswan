@@ -1,4 +1,7 @@
-Note there are several serious bugs in this. It DOES work, but needs a lot of refinement !
+Hmmm. Maybe less bugs now :-)
+
+Note a new setting wil be created in the ipsec_connections db called 'PreviousState'
+This tracks changes made so ipsec-update knows what to do on state changes. There is no need to touch this setting
 
 #Per connection settings like this
 
@@ -7,8 +10,6 @@ ipsec_connections configs
 Note that settings in the main config db only get reread if you restart ipsec.
 
 Those on a per connection basis will get reread when a connection gets restarted / called via ipsec-update.
-
-What we SHOULD do is check if the main config has changed and run a ipsec restart if they have.
 
 db settings
 
@@ -42,21 +43,6 @@ Note there is no DB entry for phase2 - Libreswan defaults to ESP so unless you u
 
 ----------------------------------------------------------
 
-Also can set the firewall ports and dispense with the masq fragment later.
-http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
-
-Need to add this and remove the masq template :
-
-ipsec only - note that ESP traffic runs on 50 and AH needs 51
-
-config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
-
-l2tpd
-
-config setprop ipsec access public UDPPorts 500,4500,1701 TCPPort 50,51
-
-----------------------------------------------------------
-
 [root@test ipsec.d]# config show ipsec
 ipsec=service
     auto=start
@@ -79,7 +65,28 @@ Make your changes and then signal-event ipsec-update to action them.
 
 Note that as it is very difficult currently to detect connections that are up (something libreswan are working on) the script does not try to detect connection status so it will reset them currently.
 
-Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established"
+Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established" (Only trlls if it i up, not if it is active)
 https://lists.libreswan.org/pipermail/swan/2015/001083.html
 
 Any question then please ask at forums.contribs.org in the Contribs sections.
+
+
+----------------------------------------------------------
+
+Notes to self on Firewalls
+
+the rp_filter and send redirects are directly manipulated by the ipsec-update script
+
+We could possibly set the firewall ports in the main config db and dispense with the masq fragment later.
+
+http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
+
+Need to add this and remove the masq template :
+
+ipsec only - note that ESP traffic runs on 50 and AH needs 51
+
+config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
+
+l2tpd
+
+config setprop ipsec access public UDPPorts 500,4500,1701 TCPPort 50,51
