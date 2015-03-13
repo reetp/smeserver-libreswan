@@ -1,0 +1,7 @@
+#Allow ipsec traffic
+/sbin/iptables -A INPUT -m policy --dir in --pol ipsec -j ACCEPT
+/sbin/iptables -A FORWARD -m policy --dir in --pol ipsec -j ACCEPT
+
+#Do not NAT VPN traffic
+# /sbin/iptables -t nat -A POSTROUTING -m policy --dir out --pol none -j MASQUERADE
+/sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT

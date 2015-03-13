@@ -1,12 +1,17 @@
-Server must be servergateway mode
+Hmmm. Maybe less bugs now :-)
 
-config show SystemMode
-SystemMode=servergateway
-
+Note a new setting wil be created in the ipsec_connections db called 'PreviousState'
+This tracks changes made so ipsec-update knows what to do on state changes. There is no need to touch this setting
 
 #Per connection settings like this
 
 ipsec_connections configs
+
+Note that settings in the main config db only get reread if you restart ipsec.
+
+Those on a per connection basis will get reread when a connection gets restarted / called via ipsec-update.
+
+db settings
 
 db ipsec_connections set workToVoip ipsec status disabled leftsourceip 192.168.10.100 leftsubnet 192.168.10.100/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
 
@@ -23,7 +28,20 @@ workToVoip=ipsec
 
 Config Defaults
 
-config set ipsec service status disabled connection type tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
+config set ipsec service status disabled connectiontype tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start
+
+Additional db entries
+
+Set mtu as in Config or ipsec connections if required
+
+https://libreswan.org/man/ipsec.conf.5.html
+
+ike = Some examples are ike=3des-sha1,aes-sha1, ike=aes, ike=aes128-md5;modp2048, ike=aes128-sha1;dh22, ike=3des-md5;modp1024,aes-sha1;modp1536 or ike=modp1536
+phase2alg = aes-sha1 | similar to above
+
+Note there is no DB entry for phase2 - Libreswan defaults to ESP so unless you use AH (not recommended) leave as is
+
+----------------------------------------------------------
 
 [root@test ipsec.d]# config show ipsec
 ipsec=service
@@ -37,3 +55,38 @@ ipsec=service
     left=%defaultroute
     pfs=yes
     status=disabled
+
+
+Any setting in the db ipsec_connections will override the default settings in the config db (or should !) If there is no setting the system will set a default.
+
+There is now a new action script called ipsec-update.
+
+Make your changes and then signal-event ipsec-update to action them.
+
+Note that as it is very difficult currently to detect connections that are up (something libreswan are working on) the script does not try to detect connection status so it will reset them currently.
+
+Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established" (Only trlls if it i up, not if it is active)
+https://lists.libreswan.org/pipermail/swan/2015/001083.html
+
+Any question then please ask at forums.contribs.org in the Contribs sections.
+
+
+----------------------------------------------------------
+
+Notes to self on Firewalls
+
+the rp_filter and send redirects are directly manipulated by the ipsec-update script
+
+We could possibly set the firewall ports in the main config db and dispense with the masq fragment later.
+
+http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
+
+Need to add this and remove the masq template :
+
+ipsec only - note that ESP traffic runs on 50 and AH needs 51
+
+config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
+
+l2tpd
+
+config setprop ipsec access public UDPPorts 500,4500,1701 TCPPort 50,51

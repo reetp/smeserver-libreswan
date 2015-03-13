@@ -1,45 +1,61 @@
-#Generic setup file
+
+{
+  use strict;
+  use warnings;
+  use esmith::ConfigDB;
+
+  my $configDB = esmith::ConfigDB->open_ro or die("can't open Config DB");
+
+  my $systemMode = $configDB->get("SystemMode")->value;
+
+  if ( $systemMode ne 'servergateway' )
+  {
+    $OUT .= "# System not in Server Gateway mode\n";
+  }
+
+  else
+  {
+
+    my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections')
+      or die("cant connect to ipsec database");
+
+    my $dbKey = 'ipsec';
+
+# Generic setup file
 
 # A standard config is included in the RPM but we need to generate a new one so we can modify settings
 
-config setup
-    protostack=netkey
-    #plutodebug=none
-    #klipsdebug=none
-    dumpdir=/var/run/pluto/
-    nat_traversal=yes
+    $OUT .= "config setup\n";
+    $OUT .= "    protostack=netkey\n";
+    $OUT .= "    #plutodebug=none\n";
+    $OUT .= "    #klipsdebug=none\n";
+    $OUT .= "    dumpdir=/var/run/pluto/\n";
+    $OUT .= "    nat_traversal=yes\n";
 
-{
-     use strict;
-     use warnings;
-     use esmith::ConfigDB;
-      
-     my $configDB = esmith::ConfigDB->open_ro or die ("can't open Config DB");
-     
-     my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections') or die ("cant connect to ipsec database");
-     
-     my $dbKey = 'ipsec';
-     
-     # This should get all the connections in an array
-     
-     my @connections = $ipsecDB->keys;
-     
-     $OUT .= "    virtual_private=";
-     
-     my $virtual_private = '';
-     
-     foreach my $ipsecprop (@connections)
-     {
-     my $ipsecstatus = $ipsecDB->get_prop("$ipsecprop",'status') || "disabled";
-     if ($ipsecstatus eq "enabled") {
-         my $leftsubnet = $ipsecDB->get_prop("$ipsecprop",'leftsubnet');
-         $virtual_private .= "%v4:$leftsubnet,"
-     }
-     }
-     
-     # Remove last charater ','
-     chop ($virtual_private);
-     $OUT .= "$virtual_private\n";
-     $OUT .= "\n";
-     $OUT .= "include /etc/ipsec.d/*.conf\n";
+# This should get all the connections in an array
+
+    my @connections = $ipsecDB->keys;
+
+    $OUT .= "    virtual_private=";
+
+    my $virtual_private = '%v4:';
+
+    foreach my $ipsecprop (@connections)
+    {
+      my $ipsecstatus =
+        $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
+      if ( $ipsecstatus eq "enabled" )
+      {
+        my $leftsubnet =
+          $ipsecDB->get_prop( "$ipsecprop", 'leftsubnet' );
+        $virtual_private .= "$leftsubnet,";
+      }
+    }
+
+# Remove last character ','
+    chop($virtual_private);
+    $OUT .= "$virtual_private\n";
+    $OUT .= "\n";
+    $OUT .= "include /etc/ipsec.d/*.conf\n";
+  }
 }
