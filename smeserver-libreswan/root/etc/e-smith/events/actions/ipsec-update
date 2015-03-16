@@ -108,9 +108,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     print " Restarting connection $ipsecprop\n ";
 
-    # Have to use system here
-    system("/usr/sbin/ipsec auto --replace $ipsecprop")
-      or die("A problem occurred with replace: $?");
+    # Have to use system here as replace usually return 1280
+    system("/usr/sbin/ipsec auto --replace $ipsecprop") == (0 || 1280) or die("A problem occurred with replace: $?");
 
     # Set Previous status
     changeState( $ipsecprop, $ipsecstatus );
@@ -141,9 +140,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     print " Restarting connection $ipsecprop\n ";
 
-    # Have to use system here
-    system("/usr/sbin/ipsec auto --replace $ipsecprop") == 0
-      or die("A problem occurred with replace: $?");
+    # Have to use system here as replace usually return 1280
+    system("/usr/sbin/ipsec auto --replace $ipsecprop") == (0 || 1280) or die("A problem occurred with replace: $?");
 
     changeState( $ipsecprop, $ipsecstatus );
    }
