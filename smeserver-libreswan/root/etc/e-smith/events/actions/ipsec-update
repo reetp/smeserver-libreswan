@@ -31,181 +31,189 @@ my $ipsecDB = esmith::ConfigDB->open('ipsec_connections')
 
 my $dbKey = 'ipsec';
 
-			
 # If the service is set disabled then make sure it is stopped
 # Note that ipsec is not a service so we cannot use the normal service commands
 
-if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
+if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
+{
 
-	# Do we check if it is already stopped ?
+ # Do we check if it is already stopped ?
 
-	print " ipsec disabled - Stopping ipsec \n ";
-	my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
-	die(" Unable to launch ipsec stop : $! \n ")
-	  if not defined $myStopConnection;
-	die(" ipsec stop failed( error code $?) \n ") if $?;
+ print " ipsec disabled - Stopping ipsec \n ";
+ my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
+ die(" Unable to launch ipsec stop : $! \n ")
+   if not defined $myStopConnection;
+ die(" ipsec stop failed( error code $?) \n ") if $?;
 
-	print "Enable Reverse Path Filtering";
+ print "Enable Reverse Path Filtering";
 
 #    system ("expand-template /etc/sysctl.conf") == 0 or die ("A problem occurred with sysctl.conf: $?");
-	system("/sbin/sysctl -p") == 0 or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -p") == 0 or die("A problem occurred with sysctl: $?");
 
-	exit 0;
+ exit 0;
 }
 
 # If the service is set to enabled AND running (then check the connections)
 
-if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
+if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
+{
 
-	my $status = (`ps ax | grep -v grep | grep pluto`);
+ my $status = (`ps ax | grep -v grep | grep pluto`);
 
-	#If the service is running
-	if ( $status =~ m/pluto/ ) {
+ #If the service is running
+ if ( $status =~ m/pluto/ )
+ {
 
-		# Lets do some stuff
-		print " ipsec is running !\n ";
+  # Lets do some stuff
+  print " ipsec is running !\n ";
 
-		# Load the connections
-		my @connections = $ipsecDB->keys;
+  # Load the connections
+  my @connections = $ipsecDB->keys;
 
-		foreach my $ipsecprop (@connections) {
+  foreach my $ipsecprop (@connections)
+  {
 
-			#Check the individual connection status
-			my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
-			  || " disabled ";
+   #Check the individual connection status
+   my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
+     || " disabled ";
 
-   			# Lets check the last state and if it doesn't exist set it disabled
+   # Lets check the last state and if it doesn't exist set it disabled
 
-			if ( not defined ($ipsecDB->get_prop( $ipsecprop, 'PreviousState' )) ) {
-				my $previpsecstatus = "disabled";
-				$ipsecDB->set_prop( $ipsecprop, "PreviousState",
-					$previpsecstatus );
-			}
+   if ( not defined( $ipsecDB->get_prop( $ipsecprop, 'PreviousState' ) ) )
+   {
+    my $previpsecstatus = "disabled";
+    $ipsecDB->set_prop( $ipsecprop, "PreviousState", $previpsecstatus );
+   }
 
-			# Now we should have it
-			my $previpsecstatus =
-			  $ipsecDB->get_prop( $ipsecprop, 'PreviousState' );
-			  
-			print "PrevState: $previpsecstatus CurrState: $ipsecstatus\n";
+   # Now we should have it
+   my $previpsecstatus = $ipsecDB->get_prop( $ipsecprop, 'PreviousState' );
 
-# Lets reread secrets anyway
+   print "PrevState: $previpsecstatus CurrState: $ipsecstatus\n";
 
-				print " Restart - ReReading Secrets \n ";
-				my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
+   # Lets reread secrets anyway
 
-				die(" Unable launch ipsec reread secrets : $! \n ")
-				  if not defined $reread;
-				die(" ipsec reread secrets failed( error code $?) \n ") if $?;
-				
+   print " Restart - ReReading Secrets \n ";
+   my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
 
-			# If we are enabled
-			if (   ( $previpsecstatus eq "enabled" )
-				&& ( $ipsecstatus eq "enabled" ) )
-			{
+   die(" Unable launch ipsec reread secrets : $! \n ")
+     if not defined $reread;
+   die(" ipsec reread secrets failed( error code $?) \n ") if $?;
 
-				# Restart
+   # If we are enabled
+   if (    ( $previpsecstatus eq "enabled" )
+        && ( $ipsecstatus eq "enabled" ) )
+   {
 
-				print " Restarting connection $ipsecprop\n ";
+    # Restart
 
-				# Have to use system here
-				system("/usr/sbin/ipsec auto --replace $ipsecprop")
-				  or die("A problem occurred with replace: $?");
+    print " Restarting connection $ipsecprop\n ";
 
-				# Set Previous status
-				changeState( $ipsecprop, $ipsecstatus );
+    # Have to use system here
+    system("/usr/sbin/ipsec auto --replace $ipsecprop")
+      or die("A problem occurred with replace: $?");
 
-			}
+    # Set Previous status
+    changeState( $ipsecprop, $ipsecstatus );
 
-			# If status is disabled then stop it
-			elsif (( $previpsecstatus eq "disabled" )
-				&& ( $ipsecstatus eq "disabled" ) )
-			{
+   }
 
-				# Stop
-				
-				print " Stop - connection $ipsecprop disabled \n";
+   # If status is disabled then stop it
+   elsif (    ( $previpsecstatus eq "disabled" )
+           && ( $ipsecstatus eq "disabled" ) )
+   {
 
-				stopConnection ($ipsecprop);
+    # Stop
 
-				# Set Previous status
-				changeState( $dbKey, $ipsecstatus );
-			}
+    print " Stop - connection $ipsecprop disabled \n";
 
-			elsif (( $previpsecstatus eq "disabled" )
-				&& ( $ipsecstatus eq "enabled" ) )
-			{
+    stopConnection($ipsecprop);
 
-				# Start
-				# Set Previous status
+    # Set Previous status
+    changeState( $dbKey, $ipsecstatus );
+   }
 
-				print " Restarting connection $ipsecprop\n ";
+   elsif (    ( $previpsecstatus eq "disabled" )
+           && ( $ipsecstatus eq "enabled" ) )
+   {
 
-				# Have to use system here
-				system("/usr/sbin/ipsec auto --replace $ipsecprop") == 0 or die("A problem occurred with replace: $?");
+    # Start
+    # Set Previous status
 
-				changeState( $ipsecprop, $ipsecstatus );
-			}
+    print " Restarting connection $ipsecprop\n ";
 
-			elsif (( $previpsecstatus eq "enabled" )
-				&& ( $ipsecstatus eq "disabled" ) )
-			{
+    # Have to use system here
+    system("/usr/sbin/ipsec auto --replace $ipsecprop") == 0
+      or die("A problem occurred with replace: $?");
 
-				# Stop and remove - do we need to  ?
+    changeState( $ipsecprop, $ipsecstatus );
+   }
 
-				print " Stopping - connection $ipsecprop\n ";
-				stopConnection ($ipsecprop);
-				
-				# Set Previous status
-				changeState( $ipsecprop, $ipsecstatus );
+   elsif (    ( $previpsecstatus eq "enabled" )
+           && ( $ipsecstatus eq "disabled" ) )
+   {
 
-			}
+    # Stop and remove - do we need to  ?
 
-			else {
+    print " Stopping - connection $ipsecprop\n ";
+    stopConnection($ipsecprop);
 
-	 # Can't be here as it means the statuses are other than enabled or disabled
-				print "Something went wrong with status\n";
-			}
+    # Set Previous status
+    changeState( $ipsecprop, $ipsecstatus );
 
-		}
+   }
 
-	}
+   else
+   {
 
-	# If it isn't running then start it up
-	# Auto connections start themselves. Added connections wait
-	else {
+    # Can't be here as it means the statuses are other than enabled or disabled
+    print "Something went wrong with status\n";
+   }
 
-		print "Disable Reverse Path Filtering";
+  }
 
-		system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
-		  or die("A problem occurred with sysctl: $?");
-		system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
-		  or die("A problem occurred with sysctl: $?");
+ }
+
+ # If it isn't running then start it up
+ # Auto connections start themselves. Added connections wait
+ else
+ {
+
+  print "Disable Reverse Path Filtering";
+
+  system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
+    or die("A problem occurred with sysctl: $?");
+  system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
+    or die("A problem occurred with sysctl: $?");
 
 # On v8 we woudl need
 # system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
 
-		print " ipsec enabled - Starting ipsec \n ";
-		my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
-		die(" Unable to launch ipsec start : $! \n ")
-		  if not defined $myStartConnection;
-		die(" ipsec start failed( error code $?) \n ") if $?;
+  print " ipsec enabled - Starting ipsec \n ";
+  my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
+  die(" Unable to launch ipsec start : $! \n ")
+    if not defined $myStartConnection;
+  die(" ipsec start failed( error code $?) \n ") if $?;
 
-		exit 0;
-	}
+  exit 0;
+ }
 
-	exit(0);
+ exit(0);
 
 }
 
 #### Subroutines here
 
-sub changeState {
-	#@_ contains $dbKey and $ipsecstatus
-	$ipsecDB->set_prop( $_[0], 'PreviousState', $_[1] );
+sub changeState
+{
+ #@_ contains $dbKey and $ipsecstatus
+ $ipsecDB->set_prop( $_[0], 'PreviousState', $_[1] );
 }
 
-sub stopConnection {
-	print " SubRoutine - stop connection $_[0]\n ";
-	system("/usr/sbin/ipsec auto --down $_[0]") == 0 or die("A problem occurred with downing: $?");
-	system("/usr/sbin/ipsec auto --delete $_[0]") == 0 or die("A problem occurred with deleting: $?");		
+sub stopConnection
+{
+ print " SubRoutine - stop connection $_[0]\n ";
+ system("/usr/sbin/ipsec auto --down $_[0]") == 0
+   or die("A problem occurred with downing: $?");
+ system("/usr/sbin/ipsec auto --delete $_[0]") == 0
+   or die("A problem occurred with deleting: $?");
 }
