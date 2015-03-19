@@ -108,9 +108,9 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     # Restart
 
-    print "Restarting connection $ipsecprop\n ";
+    print "Restarting connection $ipsecprop\n";
 
-    # Have to use system here as replace usually return 1280
+    # Have to use system here as replace usually returns 1280
     system("/usr/sbin/ipsec auto --replace $ipsecprop");
     print "restart system return code: $?\n";
 
