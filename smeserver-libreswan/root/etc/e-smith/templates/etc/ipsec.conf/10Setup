@@ -46,9 +46,9 @@
         $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
       if ( $ipsecstatus eq "enabled" )
       {
-        my $leftsubnet =
-          $ipsecDB->get_prop( "$ipsecprop", 'leftsubnet' );
-        $virtual_private .= "$leftsubnet,";
+        my $subnet =
+          $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
+        $virtual_private .= "$subnet,";
       }
     }
 
