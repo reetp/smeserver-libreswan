@@ -1,6 +1,10 @@
-Hmmm. Maybe less bugs now :-)
+V 0.5.x Notes
 
-Note a new setting wil be created in the ipsec_connections db called 'PreviousState'
+** Note that nothing is guaranteed to work and it may break your system or deny you access **
+
+Various refinements and bug fixes.
+
+Note a new setting will be created in the ipsec_connections db called 'PreviousState'
 This tracks changes made so ipsec-update knows what to do on state changes. There is no need to touch this setting
 
 #Per connection settings like this
