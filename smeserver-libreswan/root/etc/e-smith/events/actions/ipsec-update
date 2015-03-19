@@ -39,16 +39,15 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
 
  # Do we check if it is already stopped ?
 
- print " ipsec disabled - Stopping ipsec \n ";
+ print "ipsec disabled - Stopping ipsec \n";
  my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
- die(" Unable to launch ipsec stop : $! \n ")
+ die("Unable to launch ipsec stop : $!\n")
    if not defined $myStopConnection;
- die(" ipsec stop failed( error code $?) \n ") if $?;
+ die("ipsec stop failed( error code $?)\n") if $?;
 
  print "Enable Reverse Path Filtering";
 
-#    system ("expand-template /etc/sysctl.conf") == 0 or die ("A problem occurred with sysctl.conf: $?");
- system("/sbin/sysctl -p") == 0 or die("A problem occurred with sysctl: $?");
+ resetRedirects();
 
  exit 0;
 }
@@ -65,7 +64,10 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
  {
 
   # Lets do some stuff
-  print " ipsec is running !\n ";
+  print "ipsec is running !\n";
+
+  # make sure reDirects are right
+  setRedirects();
 
   # Load the connections
   my @connections = $ipsecDB->keys;
@@ -75,7 +77,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
    #Check the individual connection status
    my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
-     || " disabled ";
+     || "disabled";
 
    # Lets check the last state and if it doesn't exist set it disabled
 
@@ -92,12 +94,12 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
    # Lets reread secrets anyway
 
-   print " Restart - ReReading Secrets \n ";
+   print "Restart - ReReading Secrets\n";
    my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
 
-   die(" Unable launch ipsec reread secrets : $! \n ")
+   die("Unable launch ipsec reread secrets : $!\n")
      if not defined $reread;
-   die(" ipsec reread secrets failed( error code $?) \n ") if $?;
+   die("ipsec reread secrets failed( error code $?)\n") if $?;
 
    # If we are enabled
    if (    ( $previpsecstatus eq "enabled" )
@@ -106,11 +108,11 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     # Restart
 
-    print " Restarting connection $ipsecprop\n ";
+    print "Restarting connection $ipsecprop\n ";
 
     # Have to use system here as replace usually return 1280
-    system("/usr/sbin/ipsec auto --replace $ipsecprop") == ( 0 || 1280 )
-      or die("A problem occurred with replace: $?");
+    system("/usr/sbin/ipsec auto --replace $ipsecprop");
+    print "restart system return code: $?\n";
 
     # Set Previous status
     changeState( $ipsecprop, $ipsecstatus );
@@ -124,7 +126,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     # Stop
 
-    print " Stop - connection $ipsecprop disabled \n";
+    print "Stop - connection $ipsecprop disabled\n";
 
     stopConnection($ipsecprop);
 
@@ -139,11 +141,11 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
     # Start
     # Set Previous status
 
-    print " Restarting connection $ipsecprop\n ";
+    print "Restarting connection $ipsecprop\n";
 
     # Have to use system here as replace usually return 1280
-    system("/usr/sbin/ipsec auto --replace $ipsecprop") == ( 0 || 1280 )
-      or die("A problem occurred with replace: $?");
+    system("/usr/sbin/ipsec auto --replace $ipsecprop");
+    print "restart system return code: $?\n";
 
     changeState( $ipsecprop, $ipsecstatus );
    }
@@ -154,7 +156,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
 
     # Stop and remove - do we need to  ?
 
-    print " Stopping - connection $ipsecprop\n ";
+    print "Stopping - connection $ipsecprop\n ";
     stopConnection($ipsecprop);
 
     # Set Previous status
@@ -178,21 +180,15 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' )
  else
  {
 
-  print "Disable Reverse Path Filtering";
+  print "Disable Reverse Path Filtering\n";
 
-  system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
-    or die("A problem occurred with sysctl: $?");
-  system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
-    or die("A problem occurred with sysctl: $?");
+  setRedirects();
 
-# On v8 we woudl need
-# system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
-
-  print " ipsec enabled - Starting ipsec \n ";
+  print "ipsec enabled - Starting ipsec\n ";
   my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
-  die(" Unable to launch ipsec start : $! \n ")
+  die(" Unable to launch ipsec start : $!\n ")
     if not defined $myStartConnection;
-  die(" ipsec start failed( error code $?) \n ") if $?;
+  die(" ipsec start failed( error code $?)\n ") if $?;
 
   exit 0;
  }
@@ -211,9 +207,50 @@ sub changeState
 
 sub stopConnection
 {
- print " SubRoutine - stop connection $_[0]\n ";
- system("/usr/sbin/ipsec auto --down $_[0]") == 0
-   or die("A problem occurred with downing: $?");
- system("/usr/sbin/ipsec auto --delete $_[0]") == 0
-   or die("A problem occurred with deleting: $?");
+ print "SubRoutine - stop connection $_[0]\n ";
+ system("/usr/sbin/ipsec auto --down $_[0]");
+ print "system down code: $?\n";
+ system("/usr/sbin/ipsec auto --delete $_[0]");
+ print "system delete code: $?\n";
+}
+
+sub setRedirects
+{
+ # Big warning - this is a potential security issue
+ # Make sure you read and understand what happens !
+
+ # If I knew which specific interfaces to change we could reduce the lines here
+ system("/sbin/sysctl -w net.ipv4.conf.all.send_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.default.send_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+
+ system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.eth0.accept_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.eth1.accept_redirects=0") == 0
+   or die("A problem occurred with sysctl: $?");
+
+ system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.eth0.rp_filter=0") == 0
+   or die("A problem occurred with sysctl: $?");
+ system("/sbin/sysctl -w net.ipv4.conf.eth1.rp_filter=0") == 0
+   or die("A problem occurred with sysctl: $?");
+
+# On v8 this is set to 0 so we would need
+# system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
+
+}
+
+sub resetRedirects
+{
+#    system ("expand-template /etc/sysctl.conf") == 0 or die ("A problem occurred with sysctl.conf: $?");
+# This should reset back to defaults
+ system("/sbin/sysctl -p") == 0 or die("A problem occurred with sysctl: $?");
 }
