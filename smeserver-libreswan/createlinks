@@ -3,6 +3,35 @@
 use esmith::Build::CreateLinks qw(:all);
 my $event;
 
+# ipsec-update
+
+foreach (qw(
+       /etc/ipsec.conf
+       /etc/ipsec.d/ipsec.conf
+       /etc/ipsec.d/ipsec.secrets
+    ))
+{
+    templates2events("$_", qw(
+    post-upgrade
+    console-save
+    bootstrap-console-save
+    network-create
+    network-delete
+    ip-change
+    ip-up
+    ip-down
+    email-update
+    remoteaccess-update
+    ipsec-update
+    ));
+}
+
+#--------------------------------------------------
+# actions for ipsec-update event
+#--------------------------------------------------
+
+event_link("ipsec-update", $event, "10");
+
 # Runlevel init links.
 service_link_enhanced("ipsec", "S95", "7");
 service_link_enhanced("ipsec", "K21", "6");
@@ -10,4 +39,3 @@ service_link_enhanced("ipsec", "K21", "0");
 service_link_enhanced("ipsec", "K21", "1");
 
 safe_symlink("adjust", "root/etc/e-smith/events/$event/services2adjust/masq");
-event_link("ipsec-update", $event, "10");
