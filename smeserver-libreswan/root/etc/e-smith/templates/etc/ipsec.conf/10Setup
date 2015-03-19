@@ -42,7 +42,8 @@
 
 		foreach my $ipsecprop (@connections)
 		{
-			if ( $ipsecDB->get("$ipsecprop") ) == 'ipsec' {
+# Broken here
+			if ( $ipsecDB->get("$ipsecprop") ) eq 'ipsec' {
 				my $ipsecstatus =
 				  $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 				  if ( $ipsecstatus eq "enabled" )
@@ -51,13 +52,12 @@
 					  $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
 					$virtual_private .= "$subnet,";
 				}
-			  }
-		}
 
-		# Remove last character ','
-		chop($virtual_private);
-		$OUT .= "$virtual_private\n";
-		$OUT .= "\n";
-		$OUT .= "include /etc/ipsec.d/*.conf\n";
+				# Remove last character ','
+				chop($virtual_private);
+				  $OUT .= "$virtual_private\n";
+				  $OUT .= "\n";
+				  $OUT .= "include /etc/ipsec.d/*.conf\n";
+			};
+		}
 	}
-}
