@@ -53,11 +53,12 @@
 					$virtual_private .= "$subnet,";
 				}
 
+}
 				# Remove last character ','
 				chop($virtual_private);
 				  $OUT .= "$virtual_private\n";
 				  $OUT .= "\n";
 				  $OUT .= "include /etc/ipsec.d/*.conf\n";
-			};
+			
 		}
 	}
