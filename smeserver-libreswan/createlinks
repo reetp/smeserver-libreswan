@@ -17,12 +17,6 @@ foreach (qw(
     post-upgrade
     console-save
     bootstrap-console-save
-    network-create
-    network-delete
-    ip-change
-    ip-up
-    ip-down
-    email-update
     remoteaccess-update
     ipsec-update
     ));
