@@ -2,6 +2,14 @@
 /sbin/iptables -A INPUT -m policy --dir in --pol ipsec -j ACCEPT
 /sbin/iptables -A FORWARD -m policy --dir in --pol ipsec -j ACCEPT
 
-#Do not NAT VPN traffic
+# I think the above lines allow for both the following
+# /sbin/iptables -A INPUT -p udp --dport 500 -j ACCEPT
+# /sbin/iptables -A INPUT -p udp --dport 4500 -j ACCEPT
+
+
+# Do not NAT VPN traffic - which of these is right ?
 # /sbin/iptables -t nat -A POSTROUTING -m policy --dir out --pol none -j MASQUERADE
 /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT
+
+# And do we need this ?
+/sbin/iptables -A FORWARD -m policy --dir in --pol ipsec -j ACCEPT
