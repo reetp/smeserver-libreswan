@@ -63,7 +63,7 @@
           my $ike =
                $ipsecDB->get_prop( $ipsecprop, 'ike' )
             || $configDB->get_prop( $dbKey, 'ike' )
-            || 'aes-sha';
+            || 'aes-sha1';
           $OUT .= "    ike=$ike\n";
 
           my $phase2 =
