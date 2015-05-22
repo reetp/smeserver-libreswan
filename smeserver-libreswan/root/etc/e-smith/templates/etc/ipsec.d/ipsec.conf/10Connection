@@ -93,15 +93,18 @@
           my $ikelifetime =
                $ipsecDB->get_prop( $ipsecprop, 'ikelifetime' )
             || $configDB->get_prop( $dbKey, 'ikelifetime' )
-            || '28800s';
+            || '3600s';
           $OUT .= "    ikelifetime=$ikelifetime\n";
 
-          my $keylife =
-               $ipsecDB->get_prop( $ipsecprop, 'keylife' )
-            || $configDB->get_prop( $dbKey, 'keylife' )
-            || '3600s';
-          $OUT .= "    keylife=$keylife\n";
+          my $salifetime =
+               $ipsecDB->get_prop( $ipsecprop, 'salifetime' )
+            || $configDB->get_prop( $dbKey, 'salifetime' )
+            || '28800s';
+          $OUT .= "    salifetime=$salifetime\n";
 
+# Add is for incoming and is better that server dpd is ignored
+
+if ($auto ne 'add') {
           my $dpdaction =
                $ipsecDB->get_prop( $ipsecprop, 'dpdaction' )
             || $configDB->get_prop( $dbKey, 'dpdaction' )
@@ -119,6 +122,7 @@
             || $configDB->get_prop( $dbKey, 'dpdtimeout' )
             || '10';
           $OUT .= "    dpdtimeout=$dpdtimeout\n";
+}
 
           # default to yes unless overridden in the connection db
           my $pfs = $ipsecDB->get_prop( $ipsecprop, 'pfs' ) || 'yes';
