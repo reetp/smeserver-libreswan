@@ -19,10 +19,11 @@ AutoReqProv: no
 %description
 Libreswan is a free software implementation of the most widely supported and standarized VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
-* Fri May 22 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-4
+* Wed May 27 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-4
 - set dpd actions off if ipsec is 'add'
 - add salifetime key and rename ikelifetime and keylife
 - change defaults for salifetime and ikelifetime
+- add in rsasig support
 
 
 %changelog

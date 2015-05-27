@@ -48,9 +48,25 @@
 # Not templated this - maybe later with L2TPD
 # We currently use a password file but this could be integrated with other authent later
 
-          my $auth = $configDB->get_prop( $dbKey, 'authentication' )
-            || 'secret';
-          $OUT .= "    authby=$auth\n";
+# Lazy - assume that it is security (password by default) - option is rsasig
+
+    my $security = $ipsecDB->get_prop( "$ipsecprop", 'security' ) || 'secret';
+    my $certname = $ipsecDB->get_prop( "$ipsecprop", 'certname' ) || '';
+
+    if ( $security = "rsasig" )
+    {
+    my $leftid = $ipsecDB->get_prop( "$ipsecprop", 'leftid' ) || '';
+    $OUT .= "    authby=$security\n";
+    $OUT .= "    leftid=\"CN=$certname\"\n";
+    $OUT .= "    leftcert=$certname\n";
+    $OUT .= "    leftrsasigkey=\%cert\n";
+
+    } else
+    {
+    $OUT .= "    authby=$security\n";
+    }
+
+
 
         # Use connection value if it exists, if not use generic db value
           my $auto =
