@@ -29,6 +29,7 @@
   $OUT .= "    protostack=netkey\n";
   $OUT .= "    #plutodebug=none\n";
   $OUT .= "    #klipsdebug=none\n";
+  $OUT .= "    	plutostderrlog=/var/log/pluto.log\n";
   $OUT .= "    dumpdir=/var/run/pluto/\n";
   $OUT .= "    nat_traversal=yes\n";
 
