@@ -1,5 +1,4 @@
 # based on /etc/e-smith/templates/etc/rc.d/init.d/masq/55AllowGRE
-    
     /sbin/iptables --new-chain esp-in
     /sbin/iptables --append INPUT -p 50 -j esp-in
     /sbin/iptables --append INPUT -p 50 -j denylog
