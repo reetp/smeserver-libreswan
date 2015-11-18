@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 5
+%define release 6
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
