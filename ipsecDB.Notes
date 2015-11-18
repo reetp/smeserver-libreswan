@@ -89,15 +89,29 @@ Any question then please ask at forums.contribs.org in the Contribs sections.
 
 Notes to self on Firewalls
 
+IPSec (VPN tunneling) uses the following ports:
+
+50 - Encapsulation Header (ESP)
+51 - Authentication Header (AH)
+500/udp - Internet Key Exchange (IKE)
+4500/udp - NAT traversal
+
+L2TPD
+1701 (L2TP)
+
+
+
 the rp_filter and send redirects are directly manipulated by the ipsec-update script
 
 We could possibly set the firewall ports in the main config db and dispense with the masq fragment later.
+[11/2015 Done for ipsec - just need a postrouting config]
 
 http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
 
 Need to add this and remove the masq template :
 
 ipsec only - note that ESP traffic runs on 50 and AH needs 51
+
 
 config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
 
