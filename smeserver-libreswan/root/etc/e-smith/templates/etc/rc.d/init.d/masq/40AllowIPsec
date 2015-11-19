@@ -1,2 +1,2 @@
-# Do not NAT VPN traffic - this is on the Asterisk box and works
+# Do not NAT VPN traffic
 /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT
