@@ -48,7 +48,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
     print "ipsec disabled - Stopping ipsec \n";
 
     # First set ipsec access to private which disables firewall rule
-    # Is this the correct syntax - what abut die ?
+    # Is this the correct syntax - what about die ?
     $configDB->setprop( $dbKey, 'access', 'private' );
 
     my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
@@ -68,7 +68,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
     # Make sure access = public
-    unless ( $ipsec_access == 'public' ) {
+    unless ( $ipsec_access eq 'public' ) {
         $configDB->setprop( $dbKey, 'access', 'public' );
     }
 
@@ -200,7 +200,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
         setRedirects();
 
         # Make sure access = public
-        unless ( $ipsec_access == 'public' ) {
+        unless ( $ipsec_access eq 'public' ) {
             $configDB->setprop( $dbKey, 'access', 'public' );
         }
         print "ipsec enabled - Starting ipsec\n ";
