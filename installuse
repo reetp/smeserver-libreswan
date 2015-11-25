@@ -1,0 +1,204 @@
+Add reetp and epel repos
+http://wiki.contribs.org/User:ReetP
+http://wiki.contribs.org/Epel
+
+# signal-event yum-modify
+
+Following dependency is needed, not avail from epel etc.
+
+Processing Dependency: libevent-2.0.so.5()(64bit) for package:
+libreswan-3.15-1.el6.x86_64
+Requires: libevent_pthreads-2.0.so.5()(64bit)
+
+# [root@sme91x64 ~]# wget ftp://ftp.nohats.ca/rhel6/libevent2-2.0.21-1.el6.x86_64.rpm
+# yum localinstall libevent2-2.0.21-1.el6.x86_64.rpm
+
+# yum --enablerepo=reetp,epel install smeserver-libreswan
+
+# signal-event post-upgrade; signal-event reboot
+
+Check the status of ipsec - default db entries
+# config show ipsec
+
+[root@sme91x64 ~]# config show ipsec
+ipsec=service
+    UDPPort=500
+    access=public
+    auto=start
+    connectiontype=tunnel
+    dpdaction=restart
+    dpddelay=30
+    dpdtimeout=10
+    ikelifetime=3600s
+    left=%defaultroute
+    pfs=yes
+    salifetime=28800s
+    security=secret
+    status=enabled
+
+Should be enabled but if not enable it.
+# config setprop ipsec status enabled
+
+Access should be public if not set to public
+# config setprop ipsec access public
+
+auto should be start (originator) or add (destination)
+# config setprop ipsec auto start
+
+Connection profile
+# db ipsec_connections set xyz(profile name) ipsec ike aes-sha1 leftsourceip \
+192.168.#.# leftsubnet 192.168.#.0/24 passwd ######### right \
+#.#.#.#(Wan ip of destination) rightsubnet 192.168.#.0/24 status enabled
+
+# db ipsec_connections show
+Should be enabled, if not enable, should be auto start
+
+# db ipsec_connections setprop xyz status enabled
+# db ipsec_connections setprop xyz auto start
+
+# signal-event ipsec-update
+
+Modify templates
+/etc/e-smith/templates/etc/rc.d/init.d/masq/
+These enables or disables the firewall rules depending on if ipsec access
+is public or something else.
+
+40AllowIPsec
+{
+    my $ipsec_access = $ipsec{access};
+
+    if ( $ipsec_access eq 'public' ) {
+        $OUT .= "  # Do not NAT VPN traffic\n";
+        $OUT .= "  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol 
+
+ipsec -j ACCEPT\n";
+    }
+}
+
+56AllowESP
+# based on /etc/e-smith/templates/etc/rc.d/init.d/masq/55AllowGRE
+{
+my $ipsec_access = $ipsec{access};
+
+if ($ipsec_access eq 'public')  {
+
+  $OUT .= "    /sbin/iptables --new-chain esp-in\n";
+  $OUT .= "    /sbin/iptables --append INPUT -p ESP -j esp-in\n";
+  $OUT .= "    /sbin/iptables --append INPUT -p ESP -j denylog\n";
+  $OUT .= "    /sbin/iptables --append esp-in \! -d \$OUTERNET -j denylog\n";
+  $OUT .= "    /sbin/iptables --append esp-in -j denylog\n";
+ }
+}
+
+90adjustESP
+# based on /etc/e-smith/templates/etc/rc.d/init.d/masq/90adjustGRE
+{
+    my $ipsec_access = $ipsec{access};
+    my $ipsec_status = $ipsec{status};
+        if ( $ipsec_access eq 'public' ) {
+        
+        my $target = ( $ipsec_status eq 'enabled' ) ? "ACCEPT" : "denylog";
+
+        $OUT .= "    /sbin/iptables --replace esp-in 1 ! -d \$OUTERNET -j 
+
+denylog\n";
+        $OUT .= "    /sbin/iptables --replace esp-in 2 -j $target\n";
+    }
+}
+
+# expand-template /etc/rc.d/init.d/masq
+# signal-event ipsec-update
+
+[root@sme91x64 ~]# db ipsec_connections show
+xyz=ipsec
+    PreviousState=enabled
+    auto=start
+    ike=aes-sha1
+    leftsourceip=192.168.#.#
+    leftsubnet=192.168.#.0/24
+    passwd=#########
+    right=#.#.#.#
+    rightsubnet=192.168.#.0/24
+    status=enabled
+
+Fix errors from # ipsec verify with rp_filters
+
+Make a .sh file and paste the following and run it
+ - it's brute force but works
+for each in /proc/sys/net/ipv4/conf/*; do
+echo 0 > $each/accept_redirects
+echo 0 > $each/send_redirects
+echo 0 > $each/rp_filter
+done
+[root@sme90x64 ~]# /root/brute
+
+[root@sme90x64 ~]# service ipsec restart
+
+if it is running
+# ipsec verify
+
+[root@sme91x64 ~]# ipsec verify
+Verifying installed system and configuration files
+
+Version check and ipsec on-path                         [OK]
+Libreswan 3.15 (netkey) on 2.6.32-573.8.1.el6.x86_64
+Checking for IPsec support in kernel                    [OK]
+ NETKEY: Testing XFRM related proc values
+         ICMP default/send_redirects                    [OK]
+         ICMP default/accept_redirects                  [OK]
+         XFRM larval drop                               [OK]
+Pluto ipsec.conf syntax                                 [OK]
+Hardware random device                                  [N/A]
+Two or more interfaces found, checking IP forwarding    [OK]
+Checking rp_filter                                      [OK]
+Checking that pluto is running                          [OK]
+Checking 'ip' command                                   [OK]
+Checking 'iptables' command                             [OK]
+Checking 'prelink' command does not interfere with FIPS [PRESENT]
+Checking for obsolete ipsec.conf options                [OK]
+Opportunistic Encryption                                [DISABLED]
+
+# ipsec whack --status
+
+---snip----
+000
+000 Total IPsec connections: loaded 1, active 1
+000
+000 State Information: DDoS cookies not required, Accepting new IKE connections
+000 IKE SAs: total(1), half-open(0), open(0), authenticated(1), anonymous(0)
+000 IPsec SAs: total(1), authenticated(1), anonymous(0)
+000
+000 #2: "xyz":500 STATE_QUICK_I2 (sent QI2, IPsec SA established); 
+
+EVENT_SA_REPLACE in 28047s; newest IPSEC; eroute owner; isakmp#1; idle; 
+
+import:admin initiate
+000 #2: "xyz" esp.7458fbb3@#.#.#.# esp.4e5997f@#.#.#.# 
+
+tun.0@#.#.#.# tun.0@#.#.#.# ref=0 refhim=4294901761 Traffic: 
+
+ESPin=0B ESPout=0B! ESPmax=4194303B
+000 #1: "xyz":500 STATE_MAIN_I4 (ISAKMP SA established); EVENT_SA_REPLACE in 
+
+2606s; newest ISAKMP; lastdpd=-1s(seq in:0 out:0); idle; import:admin initiate
+000
+000 Bare Shunt list:
+000
+----snip----
+
+# ping "local ip of remote system eg 192.168.1.1 or any other systems on the 
+
+connected lan"
+
+In server-manager add additional local networks
+In server-manager make sure Secure Shell Settings set to 
+Local network access only
+Allow administrative command line access over secure shell  Yes  
+Allow secure shell access using standard passwords  Yes  
+TCP Port for secure shell access   leave default or choose a different port number eg 2222
+
+Ongoing admin usage
+# service ipsec stop
+# service ipsec restart
+# signal-event ipsec-update
+# config setprop ipsec status disabled
