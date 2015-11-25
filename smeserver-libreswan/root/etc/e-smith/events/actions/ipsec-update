@@ -31,8 +31,16 @@ my $ipsecDB = esmith::ConfigDB->open('ipsec_connections')
 
 my $dbKey = 'ipsec';
 
+# Check on access status - we'll use this later
+# If status goes to disabled we should set this private
+
+my $ipsec_access =  $configDB->get_prop( $dbKey, 'access' ) || 'private' ;
+print "IpsecAccessState: $ipsec_access\n";
+
 # If the service is set disabled then make sure it is stopped
 # Note that ipsec is not a service so we cannot use the normal service commands
+
+
 
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' )
 {
