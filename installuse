@@ -58,56 +58,7 @@ Should be enabled, if not enable, should be auto start
 
 # signal-event ipsec-update
 
-Modify templates
-/etc/e-smith/templates/etc/rc.d/init.d/masq/
-These enables or disables the firewall rules depending on if ipsec access
-is public or something else.
-
-40AllowIPsec
-{
-    my $ipsec_access = $ipsec{access};
-
-    if ( $ipsec_access eq 'public' ) {
-        $OUT .= "  # Do not NAT VPN traffic\n";
-        $OUT .= "  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol 
-
-ipsec -j ACCEPT\n";
-    }
-}
-
-56AllowESP
-# based on /etc/e-smith/templates/etc/rc.d/init.d/masq/55AllowGRE
-{
-my $ipsec_access = $ipsec{access};
-
-if ($ipsec_access eq 'public')  {
-
-  $OUT .= "    /sbin/iptables --new-chain esp-in\n";
-  $OUT .= "    /sbin/iptables --append INPUT -p ESP -j esp-in\n";
-  $OUT .= "    /sbin/iptables --append INPUT -p ESP -j denylog\n";
-  $OUT .= "    /sbin/iptables --append esp-in \! -d \$OUTERNET -j denylog\n";
-  $OUT .= "    /sbin/iptables --append esp-in -j denylog\n";
- }
-}
-
-90adjustESP
-# based on /etc/e-smith/templates/etc/rc.d/init.d/masq/90adjustGRE
-{
-    my $ipsec_access = $ipsec{access};
-    my $ipsec_status = $ipsec{status};
-        if ( $ipsec_access eq 'public' ) {
-        
-        my $target = ( $ipsec_status eq 'enabled' ) ? "ACCEPT" : "denylog";
-
-        $OUT .= "    /sbin/iptables --replace esp-in 1 ! -d \$OUTERNET -j 
-
-denylog\n";
-        $OUT .= "    /sbin/iptables --replace esp-in 2 -j $target\n";
-    }
-}
-
-# expand-template /etc/rc.d/init.d/masq
-# signal-event ipsec-update
+# 25/11/2015 masq templates updated now
 
 [root@sme91x64 ~]# db ipsec_connections show
 xyz=ipsec
