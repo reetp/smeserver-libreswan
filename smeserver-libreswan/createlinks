@@ -9,6 +9,7 @@ my $event = "ipsec-update";
 
 foreach (qw(
        /etc/ipsec.conf
+       /etc/ipsec.secrets
        /etc/ipsec.d/ipsec.conf
        /etc/ipsec.d/ipsec.secrets
     ))
