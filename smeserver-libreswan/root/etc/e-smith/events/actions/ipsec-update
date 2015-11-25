@@ -25,7 +25,7 @@ use strict;
 use warnings;
 use esmith::ConfigDB;
 
-my $configDB = esmith::ConfigDB->open_ro or die("can't open Config DB");
+my $configDB = esmith::ConfigDB->open or die("can't open Config DB");
 my $ipsecDB = esmith::ConfigDB->open('ipsec_connections')
   or die("cant connect to ipsec database");
 
@@ -49,7 +49,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
 
     # First set ipsec access to private which disables firewall rule
     # Is this the correct syntax - what about die ?
-    $configDB->setprop( $dbKey, 'access', 'private' );
+    $configDB->set_prop( $dbKey, 'access', 'private' );
 
     my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
     die("Unable to launch ipsec stop : $!\n")
@@ -69,7 +69,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
     # Make sure access = public
     unless ( $ipsec_access eq 'public' ) {
-        $configDB->setprop( $dbKey, 'access', 'public' );
+        $configDB->set_prop( $dbKey, 'access', 'public' );
     }
 
     my $status = (`ps ax | grep -v grep | grep pluto`);
@@ -201,7 +201,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
         # Make sure access = public
         unless ( $ipsec_access eq 'public' ) {
-            $configDB->setprop( $dbKey, 'access', 'public' );
+            $configDB->set_prop( $dbKey, 'access', 'public' );
         }
         print "ipsec enabled - Starting ipsec\n ";
         my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
