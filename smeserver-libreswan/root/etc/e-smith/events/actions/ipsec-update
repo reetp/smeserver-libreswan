@@ -272,3 +272,4 @@ sub resetRedirects {
 # This should reset back to defaults
     system("/sbin/sysctl -p") == 0 or die("A problem occurred with sysctl: $?");
 }
+
