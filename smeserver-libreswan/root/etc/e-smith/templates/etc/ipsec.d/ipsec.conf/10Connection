@@ -61,14 +61,39 @@
                       $ipsecDB->get_prop( "$ipsecprop", 'certname' ) || '';
 
                     if ( $security eq "rsasig" ) {
-                        my $leftid =
-                          $ipsecDB->get_prop( "$ipsecprop", 'leftid' ) || '';
-                        $OUT .= "    authby=$security\n";
-                        $OUT .= "    leftid=\"CN=$certname\"\n";
-                        $OUT .= "    leftcert=$certname\n";
-                        $OUT .= "    leftrsasigkey=\%cert\n";
+                        $OUT .= "    authby=rsasig\n";
+
+                        my $leftrsasig =
+                          $ipsecDB->get_prop( "$ipsecprop", 'leftrsasig' )
+                          || '';
+                        $OUT .= "    leftrsasigkey=$leftrsasig\n";
+
+                        my $rightrsasig =
+                          $ipsecDB->get_prop( "$ipsecprop", 'rightrsasig' )
+                          || '';
+                        $OUT .= "    rightrsasigkey=$rightrsasig\n";
 
                     }
+
+                    # Prep for certs
+                    # Problem here is that certificate settings are basically the same as rsasig
+                    # I think we can use a key to identify the type of connection and adjust accordingly
+#                    elsif ( $security eq "certificate" ) {
+                        # $OUT .= "    authby=rsasig\n";
+                            # leftcert=$keyname.$ServerName.$DomainName
+                            # leftrsasigkey=%cert
+                            # leftid=leftid
+                            # leftsendcert=always - maybe not needed
+                            
+                            # rightca=%same
+                            # rightrsasigkey=%cert
+                            # rightid=%fromcert ?
+
+#                        $OUT .= "    leftid=\"CN=$certname\"\n";
+#                        $OUT .= "    leftcert=$certname\n";
+                            
+#                    }
+
                     else {
                         $OUT .= "    authby=$security\n";
                     }
@@ -79,7 +104,14 @@
                       || $configDB->get_prop( $dbKey, 'auto' )
                       || 'start';
                     $OUT .= "    auto=$auto\n";
+                    
+                    my $ipsecversion = $ipsecDB->get_prop( "$ipsecprop", 'ipsecversion' ) || '';
+                    if ($ipsecversion eq 'v2') {
+                    $OUT .= "    ikev2=insist\n";
+                    }
+                    
 
+                        
       # Set the Phase one and Phase two default strengths - these are set to aes
                     my $ike =
                          $ipsecDB->get_prop( $ipsecprop, 'ike' )
@@ -116,26 +148,28 @@
                     $OUT .= "    salifetime=$salifetime\n";
 
                   # Add is for incoming and is better that server dpd is ignored
+                  # Disabled for now
 
-                    if ( $auto ne 'add' ) {
-                        my $dpdaction =
-                             $ipsecDB->get_prop( $ipsecprop, 'dpdaction' )
-                          || $configDB->get_prop( $dbKey, 'dpdaction' )
-                          || 'restart';
-                        $OUT .= "    dpdaction=$dpdaction\n";
+                    #                    if ( $auto ne 'add' ) {
+                    my $dpdaction =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpdaction' )
+                      || $configDB->get_prop( $dbKey, 'dpdaction' )
+                      || 'restart';
+                    $OUT .= "    dpdaction=$dpdaction\n";
 
-                        my $dpddelay =
-                             $ipsecDB->get_prop( $ipsecprop, 'dpddelay' )
-                          || $configDB->get_prop( $dbKey, 'dpddelay' )
-                          || '30';
-                        $OUT .= "    dpddelay=$dpddelay\n";
+                    my $dpddelay =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpddelay' )
+                      || $configDB->get_prop( $dbKey, 'dpddelay' )
+                      || '30';
+                    $OUT .= "    dpddelay=$dpddelay\n";
 
-                        my $dpdtimeout =
-                             $ipsecDB->get_prop( $ipsecprop, 'dpdtimeout' )
-                          || $configDB->get_prop( $dbKey, 'dpdtimeout' )
-                          || '10';
-                        $OUT .= "    dpdtimeout=$dpdtimeout\n";
-                    }
+                    my $dpdtimeout =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpdtimeout' )
+                      || $configDB->get_prop( $dbKey, 'dpdtimeout' )
+                      || '10';
+                    $OUT .= "    dpdtimeout=$dpdtimeout\n";
+
+                    #                    }
 
                     # default to yes unless overridden in the connection db
                     my $pfs = $ipsecDB->get_prop( $ipsecprop, 'pfs' ) || 'yes';
@@ -148,6 +182,11 @@
                       || '%defaultroute';
                     $OUT .= "    left=$left\n";
 
+                    my $leftid =
+                      $ipsecDB->get_prop( "$ipsecprop", 'leftid' ) || '';
+
+                    $OUT .= "    leftid=\@$leftid\n";
+
                     # These ONLY come from the ipsec_configurations db
                     my $leftsourceip =
                       $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' ) || '';
@@ -157,12 +196,18 @@
                       $ipsecDB->get_prop( $ipsecprop, 'leftsubnet' ) || '';
                     $OUT .= "    leftsubnet=$leftsub\n";
 
+                    my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
+                    $OUT .= "    right=$right\n";
+
+                    my $rightid =
+                      $ipsecDB->get_prop( "$ipsecprop", 'rightid' ) || '';
+                    $OUT .= "    rightid=\@right\n";
+
                     my $rightsubnet =
                       $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
                     $OUT .= "    rightsubnet=$rightsubnet\n";
 
-                    my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
-                    $OUT .= "    right=$right\n";
+
                 }
             }
 
