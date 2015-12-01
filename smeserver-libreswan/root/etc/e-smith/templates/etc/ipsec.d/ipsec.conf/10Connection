@@ -209,7 +209,7 @@
                         ) ne ''
                       )
                     {
-                        $OUT .= "    rightid=\@right\n";
+                        $OUT .= "    rightid=\@$rightid\n";
                     }
 
                     my $rightsubnet =
