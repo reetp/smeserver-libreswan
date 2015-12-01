@@ -1,0 +1,9 @@
+{
+    my $ipsec_access = $ipsec{access};
+
+    if ( $ipsec_access eq 'public' ) {
+        $OUT .= "  # Do not NAT VPN traffic\n";
+        $OUT .=
+"  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT\n";
+    }
+}

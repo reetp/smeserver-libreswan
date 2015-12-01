@@ -1,38 +1,66 @@
-Hmmm. Maybe less bugs now :-)
+V 0.5.x Notes
 
-Note a new setting wil be created in the ipsec_connections db called 'PreviousState' by the script
+** Note that nothing is guaranteed to work and it may break your system or deny you access **
 
+Also note that on occasion ipsec can get hung - I think this is when you enable/disable a few times quite quickly and the connection is still waiting on a timeout
+
+We can now add rsasigs
+
+To generate run - ignore warnings :
+
+ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+
+We need the following keey as our Left key and their Right key - the other ned needs to do the same :
+ipsec showhostkey --left --file /etc/ipsec.d/rsa.secrets
+
+We then add them to our connection :
+
+db ipsec_connections setprop LocalToRemote leftrsasig SomeLongStringFromLocalRSASecrets
+db ipsec_connections setprop LocalToRemote rightrsasig SomeLongStringFromRemoteRSASecrets
+
+Be VERY careful copying these - one character out anywhere and it will not work
+
+Various refinements and bug fixes.
+
+Note a new setting will be created in the ipsec_connections db called 'PreviousState'
 This tracks changes made so ipsec-update knows what to do on state changes. There is no need to touch this setting
 
 #Per connection settings like this
 
 ipsec_connections configs
 
+Note that settings in the main config db only get reread if you restart ipsec.
+
+Those on a per connection basis will get reread when a connection gets restarted / called via ipsec-update.
+
 db settings
 
-db ipsec_connections set workToVoip ipsec status disabled leftsourceip 192.168.10.100 leftsubnet 192.168.10.100/24 right 1.2.3.4 rightsubnet 192.168.50.0/24 passwd MyStRoNgPaSsWoRd ike aes-sha1
+db ipsec_connections set workToVoip ipsec status disabled leftsourceip 192.168.10.100 leftsubnet 192.168.10.100/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
 
 
 [root@test]# db ipsec_connections show
-WorkToVoip=ipsec
-    PreviousState=enabled
-    ike=aes-sha1
+workToVoip=ipsec
     leftsourceip=192.168.10.100
     leftsubnet=192.168.10.0/24
-    passwd=MyStRoNgPaSsWoRd
+    passwd=MyPassWd
     right=1.2.3.4
-    rightsubnet=192.168.50.0/24
-    status=enabled
-
+    rightsubnet=10.0.0.0/24
+    status=disabled
 
 
 Config Defaults
 
-config set ipsec service status disabled connectiontype tunnel left %defaultroute ikelifetime 3600s salifetime 28800s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start access private status disabled UDPPort 500
+config set ipsec service status disabled connectiontype tunnel left %defaultroute ikelifetime 28800s keylife 3600s dpdaction restart dpddelay 30 dpdtimeout 10 pfs yes auto start security secret salifetime 28800s
 
 Additional db entries
 
 Set mtu as in Config or ipsec connections if required
+
+Add rsasigs
+
+set
+security rsasig
+certname "Your cert nickname" - find with  'certutil -d . -L |grep u,u,u'
 
 https://libreswan.org/man/ipsec.conf.5.html
 
@@ -45,20 +73,16 @@ Note there is no DB entry for phase2 - Libreswan defaults to ESP so unless you u
 
 [root@test ipsec.d]# config show ipsec
 ipsec=service
-    UDPPort=500
-    access=public
-    auto=add
+    auto=start
     connectiontype=tunnel
     dpdaction=restart
     dpddelay=30
     dpdtimeout=10
-    ikelifetime=3600s
+    ikelifetime=28800s
+    keylife=3600s
     left=%defaultroute
     pfs=yes
-    salifetime=28800s
-    security=secret
-    status=enabled
-
+    status=disabled
 
 
 Any setting in the db ipsec_connections will override the default settings in the config db (or should !) If there is no setting the system will set a default.
@@ -69,30 +93,42 @@ Make your changes and then signal-event ipsec-update to action them.
 
 Note that as it is very difficult currently to detect connections that are up (something libreswan are working on) the script does not try to detect connection status so it will reset them currently.
 
-Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established" (Only tells if it is up, not if it is active)
+Just discovered we can probably do this with ipsec whack --status |grep "Ipsec SA established" (Only trlls if it i up, not if it is active)
 https://lists.libreswan.org/pipermail/swan/2015/001083.html
 
-Any question then please add a bug here or ask at forums.contribs.org in the Contribs sections.
+Any question then please ask at forums.contribs.org in the Contribs sections.
 
 
 ----------------------------------------------------------
 
 Notes to self on Firewalls
 
-Set access public/private - we need this for some firewall original rules to allow port 500 and now to enable rules for ESP on IP 50
+IPSec (VPN tunneling) uses the following ports:
+
+50 - Encapsulation Header (ESP)
+51 - Authentication Header (AH)
+500/udp - Internet Key Exchange (IKE)
+4500/udp - NAT traversal
+
+L2TPD
+1701 (L2TP)
+
+
 
 the rp_filter and send redirects are directly manipulated by the ipsec-update script
 
 We could possibly set the firewall ports in the main config db and dispense with the masq fragment later.
-[Done]
+[11/2015 Done for ipsec - just need a postrouting config]
 
 http://wiki.contribs.org/DB_Variables_Configuration#IPTables_firewall_.28masq.29
 
+Need to add this and remove the masq template :
+
 ipsec only - note that ESP traffic runs on 50 and AH needs 51
+
 
 config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
 
 l2tpd
 
 config setprop ipsec access public UDPPorts 500,4500,1701 TCPPort 50,51
-

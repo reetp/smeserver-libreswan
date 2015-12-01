@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
-%define version 0.4
-%define release 5
+%define version 0.5
+%define release 8
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -12,14 +12,46 @@ Source: %{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires:  e-smith-release >= 8.0
-Requires:  libreswan >= 3.12
+Requires:  e-smith-release >= 9.0
+Requires:  libreswan >= 3.14
 AutoReqProv: no
 
 %description
-Libreswan is a free software implementation of the most widely supported and standarized VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
+Libreswan is a free software implementation of the most widely supported and standarised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+
+* Wed Nov 25 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-8
+- Revised masq templates - disable on ipsec disable
+- Template ipsec.secrets so Terry won't break it again
+- Set requires e-smith >=9 and libreswan >=3.14
+
+* Wed Nov 18 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-7
+- add 90adjustESP
+
+* Tue Nov 17 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-6
+- more update to masq firewalls - change -p 50 to -p ESP
+
+* Tue Nov 17 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-5
+- update masq firewall rules
+- document clean up
+
+* Wed May 27 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-4
+- set dpd actions off if ipsec is 'add'
+- add salifetime key and rename ikelifetime and keylife
+- change defaults for salifetime and ikelifetime
+- add in rsasig support
+
+* Wed Apr 22 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-3
+- change default ike from aes-sha to aes-sha1
+
+* Tue Mar 24 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-2
+- More minor fixes - should work OK with xl2tpd
+
+* Thu Mar 19 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-1
+- Remove templates2expand and added to createlinks
+- modified ipsec.secret template
+- various other fixes
 
 * Fri Mar 13 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.4-5
 - Big changes again - now have PreviousState to detect changes

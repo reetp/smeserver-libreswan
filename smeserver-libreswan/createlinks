@@ -1,7 +1,33 @@
 #! /usr/bin/perl -w
 
+# Need some thought on when the templates should be expanded and when the action should be called.
+
 use esmith::Build::CreateLinks qw(:all);
-my $event;
+my $event = "ipsec-update";
+
+# ipsec-update
+
+foreach (qw(
+       /etc/ipsec.conf
+       /etc/ipsec.secrets
+       /etc/ipsec.d/ipsec.conf
+       /etc/ipsec.d/ipsec.secrets
+    ))
+{
+    templates2events("$_", qw(
+    post-upgrade
+    console-save
+    bootstrap-console-save
+    remoteaccess-update
+    ipsec-update
+    ));
+}
+
+#--------------------------------------------------
+# actions for ipsec-update event
+#--------------------------------------------------
+
+event_link("ipsec-update", $event, "10");
 
 # Runlevel init links.
 service_link_enhanced("ipsec", "S95", "7");
@@ -10,4 +36,3 @@ service_link_enhanced("ipsec", "K21", "0");
 service_link_enhanced("ipsec", "K21", "1");
 
 safe_symlink("adjust", "root/etc/e-smith/events/$event/services2adjust/masq");
-event_link("ipsec-update", $event, "10");
