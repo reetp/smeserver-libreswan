@@ -4,7 +4,21 @@ V 0.5.x Notes
 
 Also note that on occasion ipsec can get hung - I think this is when you enable/disable a few times quite quickly and the connection is still waiting on a timeout
 
+We can now add rsasigs
 
+To generate run - ignore warnings :
+
+ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+
+We need the following keey as our Left key and their Right key - the other ned needs to do the same :
+ipsec showhostkey --left --file /etc/ipsec.d/rsa.secrets
+
+We then add them to our connection :
+
+db ipsec_connections setprop LocalToRemote leftrsasig SomeLongStringFromLocalRSASecrets
+db ipsec_connections setprop LocalToRemote rightrsasig SomeLongStringFromRemoteRSASecrets
+
+Be VERY careful copying these - one character out anywhere and it will not work
 
 Various refinements and bug fixes.
 
