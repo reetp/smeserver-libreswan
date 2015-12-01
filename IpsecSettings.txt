@@ -1,0 +1,117 @@
+Config settings
+
+For other options see here 
+https://libreswan.org/man/ipsec.conf.5.html
+
+We have a new action
+
+signal-event ipsec-update
+
+This will process the required templates and create some files.
+When a ipsec and a connection is enabled it will open the relevant ports on the firewall
+It has to disable send redirects, accept redirects and rp_filter. Note that these are considered security features and you disabled them at your own risk
+https://libreswan.org/wiki/FAQ#Why_is_it_recommended_to_disable_send_redirects_in_.2Fproc.2Fsys.2Fnet_.3F
+https://libreswan.org/wiki/FAQ#Why_is_it_recommended_to_disable_rp_filter_in_.2Fproc.2Fsys.2Fnet_.3F
+
+These settings are generic and can be overwritten on a per connection basis
+
+config ipsec show
+
+Only set with
+db configuration setprop ipsec $key $property
+
+Setting status enabled/disabled will modify access to private/public
+
+status: Default disabled | enabled
+access: Default private | public
+UDPPort: Default 500 | Variable
+auto: Default start | add (do not use ondemand or ignore)
+
+Overall settings - can be overwritten per connection
+
+ikelifetime: Default 3600s | Variable
+salifetime: Default 28800s | Variable
+dpdaction: Default restart | Variable
+dpddelay: Default 30 | Variable
+dpdtimeout: Default 10 | Variable
+pfs: Default yes | Variable
+iptype: Default static | dynamic
+connectiontype: Default secret | rassig, certificate
+ike: Default Empty | aes-sha1
+
+
+Per connection only settings
+
+Automatically modified
+PreviousState: Denotes previous connction state
+
+Manual keys
+
+db ipsec_connections show
+
+db ipsec_connections setprop ConnectionName $key $property
+
+connectiontype: Default tunnel | transport/passthrough/drop/reject
+leftrsasig: Default Empty | Your Local rsasignature key
+rightrsasig: Default Empty | Your Remote rsasignature key
+ipsecversion: Default Empty - v1 | If this is set v2 then only v2 will be alllowed
+phase2: aes-sha1 | Various
+mtu: Default Empty | Various
+left: Default %defaultroute | Variable - usually local WAN IP
+leftid: Default Empty | Variable
+leftsourceip:  Default Empty | This server local IP
+leftsubnet:  Default Empty | This server local subnet
+right: Default %defaultroute | Destination WAN IP
+rightid: Default Empty | Variable
+rightsubnet:  Default Empty | Destination subnet
+passwd| Default Empty | Variable
+
+
+# certname: Default Empty | Your certificate name
+# leftcert
+# rightca: Default %same
+
+
+For a basic connection you need this as a bare minimum
+
+Note we use 'set' when we create new connection. Thereafter you can modify it with setprop
+
+Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
+db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
+
+Remote - WAN IP 1.2.3.4 Local IP 10.0.0.1 Subnet 10.0.0.0/24
+db ipsec_connections set MyWest ipsec status enabled leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 passwd MyPassWd
+
+
+For a rsasig connection
+ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+When you copy the key it MUST be in one long line.
+
+Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
+db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 security rsasig leftid East rightid West rsasig SomeLongPasswordFromWest
+
+Remote - WAN IP 1.2.3.4 Local IP 10.0.0.1 Subnet 10.0.0.0/24
+db ipsec_connections set MyWest ipsec status enabled leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West rsasig SomeLongEastPasswordFromEast
+
+
+For a rsasig connection with dynamic IP
+ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+When you copy the key it MUST be in one long line.
+East needs to create a key and send it to West. West needs to create a key and send it to East
+
+Note that with dynamic IPs we have to allow connections from anywhere which is not as safe as fixed IPs.
+We therefore recommend setting security rsasig, ike v2, and use leftid/rightid to enhance security
+
+We set the static server to:
+auto 'add' so it only listens for incoming connections
+dpdaction 'clear' so the route is cleared if the connection is dropped
+
+We set the dynamic server to:
+auto 'start' so it immediately attempts to connect
+
+
+Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
+db ipsec_connections set MyEast ipsec status enabled auto add dpdaction clear leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right %any rightsubnet 10.0.0.0/24 security rsasig leftid=East rightid West rsasig SomeLongPasswordFromWest
+
+Remote - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
+db ipsec_connections set MyWest ipsec status enabled auto start left %any leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West rsasig SomeLongEastPasswordFromEast
