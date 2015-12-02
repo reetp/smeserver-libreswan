@@ -55,7 +55,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
     die("Ipsec Error - Unable to launch ipsec stop : $!\n")
 
       if not defined $myStopConnection;
-    die("Ipsec Error - Ubale to stop ipsec( error code $?)\n") if $?;
+    die("Ipsec Error - Unable to stop ipsec( error code $?)\n") if $?;
 
     print "Ipsec Information - Enable Reverse Path Filtering";
     resetRedirects();
@@ -92,6 +92,9 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
             my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
               || "disabled";
 
+            # What type of connection are we ?
+            my $connection = $ipsecDB->get_prop( "$ipsecprop", 'auto' ) || '';
+              
             # Lets check the last state and if it doesn't exist set it disabled
 
             if (
@@ -130,8 +133,13 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
                 # Have to use system here as replace usually returns 1280
                 system("/usr/sbin/ipsec auto --replace $ipsecprop");
-                print "Ipsec Information - Restart system - return code: $?\n";
-
+                print "Ipsec Information - Restart system - replace return code: $?\n";
+                
+                # If connection -= start then....
+                if ($connection eq 'start') {
+                system("/usr/sbin/ipsec auto --up $ipsecprop");
+                print "Ipsec Information - Restart system - up return code: $?\n";
+                }
                 # Set Previous status
                 changeState( $ipsecprop, $ipsecstatus );
 
@@ -159,12 +167,19 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                 # Start
                 # Set Previous status
 
-                print "Restarting connection $ipsecprop\n";
+                print "Enabling connection $ipsecprop\n";
 
                 # Have to use system here as replace usually return 1280
                 system("/usr/sbin/ipsec auto --replace $ipsecprop");
                 print "Ipsec Information - Restart system - return code: $?\n";
-
+                
+                if ($connection eq 'start') {
+                    # Have to use exec here as system waits for a return and if the connection
+                    # does not come up it will just hang. So fire 'n forget
+                exec("/usr/sbin/ipsec auto --up $ipsecprop");
+                print "Ipsec Information - Auto Up $ipsecprop\n";
+                }
+                
                 changeState( $ipsecprop, $ipsecstatus );
             }
 
