@@ -197,6 +197,7 @@
                     $OUT .= "    leftsubnet=$leftsub\n";
 
                     # If we are a static host to a dynamic client we HAVE to set right %any
+                                        
                     my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
 
                     if ( $iptype eq 'stattodyn' ) {
