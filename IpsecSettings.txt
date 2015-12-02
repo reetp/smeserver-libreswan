@@ -35,7 +35,7 @@ dpdaction: Default restart | Variable
 dpddelay: Default 30 | Variable
 dpdtimeout: Default 10 | Variable
 pfs: Default yes | Variable
-iptype: Default static | dynamic
+iptype: Default stattodyn | dyntostat - are we a static host to dynamic client or vicve versa ?
 connectiontype: Default secret | rassig, certificate
 ike: Default Empty | aes-sha1
 
@@ -51,6 +51,7 @@ db ipsec_connections show
 
 db ipsec_connections setprop ConnectionName $key $property
 
+ipype: Default Empty | stattodyn, dyntostat | Configure static or dynamic IP host
 connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
