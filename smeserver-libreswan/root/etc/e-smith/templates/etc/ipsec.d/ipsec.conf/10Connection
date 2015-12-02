@@ -99,7 +99,7 @@
                       || 'start';
 
                     # If we are a static host to a dynamic client we are always add
-                    my $iptype = $ipsecDB->get_prop( $ipsecprop, 'iptype' ) || 'stattodyn';
+                    my $iptype = $ipsecDB->get_prop( $ipsecprop, 'iptype' ) || '';
 
                     if ( $iptype eq 'stattodyn' ) {
                         $OUT .= "    auto=add\n";
@@ -108,7 +108,7 @@
                         $OUT .= "    auto=$auto\n";
                     }
 
-                    my $ipsecversion = $ipsecDB->get_prop( "$ipsecprop", 'ipsecversion' ) || '';
+                    my $ipsecversion = $ipsecDB->get_prop( $ipsecprop, 'ipsecversion' ) || '';
                     if ( $ipsecversion eq 'v2' ) {
                         $OUT .= "    ikev2=insist\n";
                     }
