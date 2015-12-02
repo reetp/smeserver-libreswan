@@ -55,14 +55,14 @@ ipype: Default Empty | stattodyn, dyntostat | Configure static or dynamic IP hos
 connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
-ipsecversion: Default Empty - v1 | If this is set v2 then only v2 will be alllowed
+ipsecversion: Default Empty - v1 | If this is set v2 then only v2 will be allowed
 phase2: aes-sha1 | Various
 mtu: Default Empty | Various
 left: Default %defaultroute | Variable - usually local WAN IP
 leftid: Default Empty | Variable
 leftsourceip:  Default Empty | This server local IP
 leftsubnet:  Default Empty | This server local subnet
-right: Default %defaultroute | Destination WAN IP
+right: Default Empty | Destination WAN IP
 rightid: Default Empty | Variable
 rightsubnet:  Default Empty | Destination subnet
 passwd| Default Empty | Variable
@@ -116,3 +116,15 @@ db ipsec_connections set MyEast ipsec status enabled auto add dpdaction clear le
 
 Remote - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
 db ipsec_connections set MyWest ipsec status enabled auto start left %any leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West rsasig SomeLongEastPasswordFromEast
+
+
+Bare minimum config for ipsec with static hosts
+
+MyConnection=ipsec
+    ike=aes-sha1
+    leftsourceip=192.168.50.1
+    leftsubnet=192.168.50.0/24
+    passwd=SomeLongAndComplicatedPassword
+    right=1.2.3.4
+    rightsubnet=192.68.60.0/24
+    status=enabled
