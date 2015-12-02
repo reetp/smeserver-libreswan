@@ -22,6 +22,8 @@ Libreswan is a free software implementation of the most widely supported and sta
 %changelog
 * Wed Dec 02 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-11
 - Determine host IPtype - static or dynamic IP
+- auto --up changed to exec
+- Add checks for Left/Right ID in secrets file
 
 * Tue Dec 01 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-10
 - Allow dynamic addresses
