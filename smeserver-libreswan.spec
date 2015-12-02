@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 10
+%define release 11
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -20,6 +20,9 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standarised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Wed Dec 02 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-11
+- Determine host IPtype - static or dynamic IP
+
 * Tue Dec 01 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-10
 - Allow dynamic addresses
 - Add iptype
