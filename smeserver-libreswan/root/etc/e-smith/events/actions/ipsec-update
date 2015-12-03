@@ -75,7 +75,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
     my $status = (`ps ax | grep -v grep | grep pluto`);
 
     #If the service is running
-    if ( $status =~ m/pluto/ ) {
+    if ( $status =~ m/_plutorun/ ) {
 
         # Lets do some stuff
         print "Ipsec Information - ipsec is running !\n";
@@ -94,21 +94,16 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
             # What type of connection are we ?
             my $connection = $ipsecDB->get_prop( "$ipsecprop", 'auto' ) || '';
-              
+
             # Lets check the last state and if it doesn't exist set it disabled
 
-            if (
-                not
-                defined( $ipsecDB->get_prop( $ipsecprop, 'PreviousState' ) ) )
-            {
+            if ( not defined( $ipsecDB->get_prop( $ipsecprop, 'PreviousState' ) ) ) {
                 my $previpsecstatus = "disabled";
-                $ipsecDB->set_prop( $ipsecprop, "PreviousState",
-                    $previpsecstatus );
+                $ipsecDB->set_prop( $ipsecprop, "PreviousState", $previpsecstatus );
             }
 
             # Now we should have it
-            my $previpsecstatus =
-              $ipsecDB->get_prop( $ipsecprop, 'PreviousState' );
+            my $previpsecstatus = $ipsecDB->get_prop( $ipsecprop, 'PreviousState' );
 
             print "Ipsec Information - PrevState: $previpsecstatus CurrState: $ipsecstatus\n";
 
@@ -123,9 +118,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
               if $?;
 
             # If we are enabled
-            if (   ( $previpsecstatus eq "enabled" )
-                && ( $ipsecstatus eq "enabled" ) )
-            {
+            if (    ( $previpsecstatus eq "enabled" )
+                 && ( $ipsecstatus eq "enabled" ) ) {
 
                 # Restart
 
@@ -134,21 +128,30 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                 # Have to use system here as replace usually returns 1280
                 system("/usr/sbin/ipsec auto --replace $ipsecprop");
                 print "Ipsec Information - Restart system - replace return code: $?\n";
-                
+
                 # If connection -= start then....
-                if ($connection eq 'start') {
-                system("/usr/sbin/ipsec auto --up $ipsecprop");
-                print "Ipsec Information - Restart system - up return code: $?\n";
+                if ( $connection eq 'start' ) {
+                    print "Ipsec Information - En - En - Auto --async --up $ipsecprop\n";
+
+                    # system("/root/ipsecup.sh") or die "failed";
+                    # timer ($ipsecprop);
+
+                    system("/usr/sbin/ipsec auto --asynchronous --up $ipsecprop");
+
+                    # or die "exec failed!";
+                    # exec "/usr/sbin/ipsec auto --up $ipsecprop";
+                    print "Ipsec Information - En - En auto --up\n";
+                    print "Ipsec Information - Restart system - up return code: $?\n";
                 }
+
                 # Set Previous status
                 changeState( $ipsecprop, $ipsecstatus );
 
             }
 
             # If status is disabled then stop it
-            elsif (( $previpsecstatus eq "disabled" )
-                && ( $ipsecstatus eq "disabled" ) )
-            {
+            elsif (    ( $previpsecstatus eq "disabled" )
+                    && ( $ipsecstatus eq "disabled" ) ) {
 
                 # Stop
 
@@ -160,9 +163,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                 changeState( $dbKey, $ipsecstatus );
             }
 
-            elsif (( $previpsecstatus eq "disabled" )
-                && ( $ipsecstatus eq "enabled" ) )
-            {
+            elsif (    ( $previpsecstatus eq "disabled" )
+                    && ( $ipsecstatus eq "enabled" ) ) {
 
                 # Start
                 # Set Previous status
@@ -172,20 +174,26 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                 # Have to use system here as replace usually return 1280
                 system("/usr/sbin/ipsec auto --replace $ipsecprop");
                 print "Ipsec Information - Restart system - return code: $?\n";
-                
-                if ($connection eq 'start') {
+
+                if ( $connection eq 'start' ) {
+
                     # Have to use exec here as system waits for a return and if the connection
                     # does not come up it will just hang. So fire 'n forget
-                exec("/usr/sbin/ipsec auto --up $ipsecprop");
-                print "Ipsec Information - Auto Up $ipsecprop\n";
+                    print "Ipsec Information - Dis- En -  - Auto --async --up $ipsecprop\n";
+
+                    # timeout ($ipsecprop);
+                    system("/usr/sbin/ipsec auto --asynchronous--up $ipsecprop");
+                    print "Ipsec Information - Dis - En auto --up\n";
+                    print "Ipsec Information - Restart system - up return code: $?\n";
+
+                    #or die "exec failed!";
                 }
-                
+
                 changeState( $ipsecprop, $ipsecstatus );
             }
 
-            elsif (( $previpsecstatus eq "enabled" )
-                && ( $ipsecstatus eq "disabled" ) )
-            {
+            elsif (    ( $previpsecstatus eq "enabled" )
+                    && ( $ipsecstatus eq "disabled" ) ) {
 
                 # Stop and remove - do we need to  ?
 
@@ -199,7 +207,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
             else {
 
-     # Can't be here as it means the statuses are other than enabled or disabled
+                # Can't be here as it means the statuses are other than enabled or disabled
                 print "Ipsec Error - Something went wrong with ipsec connection status\n";
             }
 
@@ -240,6 +248,49 @@ sub changeState {
     $ipsecDB->set_prop( $_[0], 'PreviousState', $_[1] );
 }
 
+sub progress_bar {
+    my ( $got, $total, $width, $char ) = @_;
+    $width ||= 25;
+    $char  ||= '=';
+    my $num_width = length $total;
+    local $| = 1;
+    printf "|%-${width}s| Got %${num_width}s bytes of %s (%.2f%%)\r",
+      $char x ( ( $width - 1 ) * $got / $total ) . '>', $got, $total, 100 * $got / +$total;
+}
+
+sub timer {
+    my $pid;
+    eval {
+
+        local $SIG{'ALRM'} = sub { die "timed out\n" };
+
+        alarm(5);
+
+        $pid = fork;
+        if ( $pid == 0 ) {
+            exec("/usr/sbin/ipsec auto --up $_[0]");
+        }
+        else {
+            wait;
+        }
+
+        alarm(0);
+
+    };
+    if ($@) {
+        if ( $@ eq "timed out\n" ) {
+            kill( 15, $pid );
+            print "I timed out\n";
+        }
+        else {
+            print "something else went boom\n";
+        }
+    }
+    else {
+        print "I didn't time out\n";
+    }
+}
+
 sub stopConnection {
     print "Ipsec Information - SubRoutine - stop connection $_[0]\n ";
     system("/usr/sbin/ipsec auto --down $_[0]");
@@ -253,21 +304,21 @@ sub setRedirects {
     # Big warning - this is a potential security issue
     # Make sure you read and understand what happens !
 
-  # If I knew which specific interfaces to change we could reduce the lines here
+    # If I knew which specific interfaces to change we could reduce the lines here
     system("/sbin/sysctl -w net.ipv4.conf.all.send_redirects=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.default.send_redirects=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
 
-      # I don;t beleive these are required
-#    system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
-#      or die("Ipsec Error - A problem occurred with sysctl: $?");
-#    system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
-#      or die("Ipsec Error - A problem occurred with sysctl: $?");
-#    system("/sbin/sysctl -w net.ipv4.conf.eth0.accept_redirects=0") == 0
-#      or die("Ipsec Error - A problem occurred with sysctl: $?");
-#    system("/sbin/sysctl -w net.ipv4.conf.eth1.accept_redirects=0") == 0
-#      or die("Ipsec Error - A problem occurred with sysctl: $?");
+    # I don;t beleive these are required
+    #    system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
+    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
+    #    system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
+    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
+    #    system("/sbin/sysctl -w net.ipv4.conf.eth0.accept_redirects=0") == 0
+    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
+    #    system("/sbin/sysctl -w net.ipv4.conf.eth1.accept_redirects=0") == 0
+    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
 
     system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
@@ -278,15 +329,15 @@ sub setRedirects {
     system("/sbin/sysctl -w net.ipv4.conf.eth1.rp_filter=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
 
-# On v8 this is set to 0 so we would need
-# system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
+    # On v8 this is set to 0 so we would need
+    # system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
 
 }
 
 sub resetRedirects {
 
-#    system ("expand-template /etc/sysctl.conf") == 0 or die ("A problem occurred with sysctl.conf: $?");
-# This should reset back to defaults
+    #    system ("expand-template /etc/sysctl.conf") == 0 or die ("A problem occurred with sysctl.conf: $?");
+    # This should reset back to defaults
     system("/sbin/sysctl -p") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
 }
