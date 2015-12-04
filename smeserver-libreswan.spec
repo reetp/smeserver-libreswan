@@ -24,7 +24,6 @@ Libreswan is a free software implementation of the most widely supported and sta
 - Add keyingtries
 - Finally fix add issues using asynchronous
 
-
 * Wed Dec 02 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-11
 - Determine host IPtype - static or dynamic IP
 - auto --up changed to exec
