@@ -133,13 +133,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                 if ( $connection eq 'start' ) {
                     print "Ipsec Information - En - En - Auto --async --up $ipsecprop\n";
 
-                    # system("/root/ipsecup.sh") or die "failed";
-                    # timer ($ipsecprop);
+                    startConnection($ipsecprop);
 
-                    system("/usr/sbin/ipsec auto --asynchronous --up $ipsecprop");
-
-                    # or die "exec failed!";
-                    # exec "/usr/sbin/ipsec auto --up $ipsecprop";
                     print "Ipsec Information - En - En auto --up\n";
                     print "Ipsec Information - Restart system - up return code: $?\n";
                 }
@@ -181,8 +176,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
                     # does not come up it will just hang. So fire 'n forget
                     print "Ipsec Information - Dis- En -  - Auto --async --up $ipsecprop\n";
 
-                    # timeout ($ipsecprop);
-                    system("/usr/sbin/ipsec auto --asynchronous--up $ipsecprop");
+                    startConnection($ipsecprop);
                     print "Ipsec Information - Dis - En auto --up\n";
                     print "Ipsec Information - Restart system - up return code: $?\n";
 
@@ -248,47 +242,8 @@ sub changeState {
     $ipsecDB->set_prop( $_[0], 'PreviousState', $_[1] );
 }
 
-sub progress_bar {
-    my ( $got, $total, $width, $char ) = @_;
-    $width ||= 25;
-    $char  ||= '=';
-    my $num_width = length $total;
-    local $| = 1;
-    printf "|%-${width}s| Got %${num_width}s bytes of %s (%.2f%%)\r",
-      $char x ( ( $width - 1 ) * $got / $total ) . '>', $got, $total, 100 * $got / +$total;
-}
-
-sub timer {
-    my $pid;
-    eval {
-
-        local $SIG{'ALRM'} = sub { die "timed out\n" };
-
-        alarm(5);
-
-        $pid = fork;
-        if ( $pid == 0 ) {
-            exec("/usr/sbin/ipsec auto --up $_[0]");
-        }
-        else {
-            wait;
-        }
-
-        alarm(0);
-
-    };
-    if ($@) {
-        if ( $@ eq "timed out\n" ) {
-            kill( 15, $pid );
-            print "I timed out\n";
-        }
-        else {
-            print "something else went boom\n";
-        }
-    }
-    else {
-        print "I didn't time out\n";
-    }
+sub startConnection {
+    system("/usr/sbin/ipsec auto --asynchronous--up $ipsecprop");
 }
 
 sub stopConnection {
