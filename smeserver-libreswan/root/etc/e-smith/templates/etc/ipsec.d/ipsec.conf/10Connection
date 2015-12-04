@@ -41,12 +41,12 @@
 
                     # These should be from $configDB-> ipsec
 
-            # Not templated this - maybe later with L2TPD
-            # We currently use a password file but this could be integrated with other authent later
+                    # Not templated this - maybe later with L2TPD
+                    # We currently use a password file but this could be integrated with other authent later
 
                     # Lazy - assume that it is security (password by default) - option is rsasig
 
-                 # Careful - property 'type' has a special meaning in configDB and returns 'service'
+                    # Careful - property 'type' has a special meaning in configDB and returns 'service'
 
                     my $connectiontype = $configDB->get_prop( $dbKey, 'connectiontype' )
                       || 'tunnel';
@@ -69,15 +69,15 @@
 
                     }
 
-                # Prep for certs
-                # Problem here is that certificate settings are basically the same as rsasig
-                # I think we can use a key to identify the type of connection and adjust accordingly
-                #                    elsif ( $security eq "certificate" ) {
-                # $OUT .= "    authby=rsasig\n";
-                # leftcert=$keyname.$ServerName.$DomainName
-                # leftrsasigkey=%cert
-                # leftid=leftid
-                # leftsendcert=always - maybe not needed
+                    # Prep for certs
+                    # Problem here is that certificate settings are basically the same as rsasig
+                    # I think we can use a key to identify the type of connection and adjust accordingly
+                    #                    elsif ( $security eq "certificate" ) {
+                    # $OUT .= "    authby=rsasig\n";
+                    # leftcert=$keyname.$ServerName.$DomainName
+                    # leftrsasigkey=%cert
+                    # leftid=leftid
+                    # leftsendcert=always - maybe not needed
 
                     # rightca=%same
                     # rightrsasigkey=%cert
@@ -135,6 +135,12 @@
 
                     # These should be from $configDB-> ipsec unless they exist in ipsec_connections
 
+                    my $keyingtries =
+                         $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )
+                      || $configDB->get_prop( $dbKey, 'keyingtries' ) ''
+                      || '0';
+                    $OUT .= "    keyingtries=$keyingtries\n";
+
                     # Following come from ipsecDB or configDB or hardcoded
                     my $ikelifetime =
                          $ipsecDB->get_prop( $ipsecprop, 'ikelifetime' )
@@ -184,8 +190,7 @@
                     $OUT .= "    left=$left\n";
 
                     # These ONLY come from the ipsec_configurations db
-                    if ( ( my $leftid = $ipsecDB->get_prop( "$ipsecprop", 'leftid' ) || '' ) ne '' )
-                    {
+                    if ( ( my $leftid = $ipsecDB->get_prop( "$ipsecprop", 'leftid' ) || '' ) ne '' ) {
                         $OUT .= "    leftid=\@$leftid\n";
                     }
                     my $leftsourceip = $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' )
@@ -197,7 +202,7 @@
                     $OUT .= "    leftsubnet=$leftsub\n";
 
                     # If we are a static host to a dynamic client we HAVE to set right %any
-                                        
+
                     my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
 
                     if ( $iptype eq 'stattodyn' ) {
@@ -207,8 +212,7 @@
                         $OUT .= "    right=$right\n";
                     }
 
-                    if ( ( my $rightid = $ipsecDB->get_prop( "$ipsecprop", 'rightid' ) || '' ) ne
-                        '' ) {
+                    if ( ( my $rightid = $ipsecDB->get_prop( "$ipsecprop", 'rightid' ) || '' ) ne '' ) {
                         $OUT .= "    rightid=\@$rightid\n";
                     }
 

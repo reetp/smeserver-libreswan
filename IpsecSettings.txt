@@ -43,7 +43,7 @@ ike: Default Empty | aes-sha1
 Per connection only settings
 
 Automatically modified
-PreviousState: Denotes previous connction state
+PreviousState: Denotes previous connection state
 
 Manual keys
 
@@ -66,7 +66,7 @@ right: Default Empty | Destination WAN IP
 rightid: Default Empty | Variable
 rightsubnet:  Default Empty | Destination subnet
 passwd| Default Empty | Variable
-
+keyingtries| Default Empty | 0 is default - 'forever'
 
 # certname: Default Empty | Your certificate name
 # leftcert
