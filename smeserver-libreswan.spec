@@ -17,7 +17,7 @@ Requires:  libreswan >= 3.14
 AutoReqProv: no
 
 %description
-Libreswan is a free software implementation of the most widely supported and standarised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
+Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
 * Fri Dec 04 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-12
