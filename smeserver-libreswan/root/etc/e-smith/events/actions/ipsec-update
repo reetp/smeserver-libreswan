@@ -243,7 +243,7 @@ sub changeState {
 }
 
 sub startConnection {
-    system("/usr/sbin/ipsec auto --asynchronous--up $ipsecprop");
+    system("/usr/sbin/ipsec auto --asynchronous --up $_[0]");
 }
 
 sub stopConnection {
