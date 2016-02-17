@@ -51,7 +51,7 @@ db ipsec_connections show
 
 db ipsec_connections setprop ConnectionName $key $property
 
-ipype: Default Empty | stattodyn, dyntostat | Configure static or dynamic IP host
+iptype: Default Empty | stattodyn, dyntostat | Configure static or dynamic IP host
 connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
