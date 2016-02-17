@@ -133,9 +133,12 @@ rm -rf %{name}-%{version}
 %preun
 %post
 
-/sbin/e-smith/expand-template /etc/rc.d/init.d/masq
-/sbin/e-smith/expand-template /etc/inittab
-/sbin/init q
+echo "run the following if you do not want a reboot"  
+echo "config setprop UnsavedChanges No"
+echo "/etc/e-smith/events/actions/initialize-default-databases"
+echo "/sbin/e-smith/expand-template /etc/rc.d/init.d/masq"
+echo "/sbin/e-smith/expand-template /etc/inittab"
+echo "/sbin/init q"
 
 
 echo "see http://wiki.contribs.org/IPSEC"
