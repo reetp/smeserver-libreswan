@@ -1,5 +1,5 @@
 {
-    my $ipsec_access = $ipsec{access};
+    my $ipsec_access = $ipsec{access} || '';
 
     if ( $ipsec_access eq 'public' ) {
         $OUT .= "  # Do not NAT VPN traffic\n";
