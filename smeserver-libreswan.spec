@@ -1,10 +1,10 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 13
+%define release 15
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
-Release: %{release}
+Release: %{release}%{?dist}
 License: GNU GPL version 2
 URL: http://libreswan.org/
 Group: SMEserver/addon
@@ -20,6 +20,9 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Wed Mar 09 2016 JP Pialasse <tests@pialasse.com> 0.5-15.sme
+- first import in SME buildsys
+
 * Wed Feb 17 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-13
 - Fix small typo in readme
 
@@ -133,12 +136,9 @@ rm -rf %{name}-%{version}
 %preun
 %post
 
-echo "run the following if you do not want a reboot"  
-echo "config setprop UnsavedChanges No"
-echo "/etc/e-smith/events/actions/initialize-default-databases"
-echo "/sbin/e-smith/expand-template /etc/rc.d/init.d/masq"
-echo "/sbin/e-smith/expand-template /etc/inittab"
-echo "/sbin/init q"
+/sbin/e-smith/expand-template /etc/rc.d/init.d/masq
+/sbin/e-smith/expand-template /etc/inittab
+/sbin/init q
 
 
 echo "see http://wiki.contribs.org/IPSEC"
