@@ -1,24 +1,15 @@
-Add reetp and epel repos
-http://wiki.contribs.org/User:ReetP
+Add epel repos
 http://wiki.contribs.org/Epel
 
-# signal-event yum-modify
+ signal-event yum-modify
 
-Following dependency is needed, not avail from epel etc.
 
-Processing Dependency: libevent-2.0.so.5()(64bit) for package:
-libreswan-3.15-1.el6.x86_64
-Requires: libevent_pthreads-2.0.so.5()(64bit)
+ yum --enablerepo=smedev,epel install smeserver-libreswan
 
-# [root@sme91x64 ~]# wget ftp://ftp.nohats.ca/rhel6/libevent2-2.0.21-1.el6.x86_64.rpm
-# yum localinstall libevent2-2.0.21-1.el6.x86_64.rpm
-
-# yum --enablerepo=reetp,epel install smeserver-libreswan
-
-# signal-event post-upgrade; signal-event reboot
+ signal-event post-upgrade; signal-event reboot
 
 Check the status of ipsec - default db entries
-# config show ipsec
+ config show ipsec
 
 [root@sme91x64 ~]# config show ipsec
 ipsec=service
@@ -56,6 +47,8 @@ Should be enabled, if not enable, should be auto start
 # db ipsec_connections setprop xyz status enabled
 # db ipsec_connections setprop xyz auto start
 
+# Add remote network to Local networks in server-manager
+
 # signal-event ipsec-update
 
 # 25/11/2015 masq templates updated now
@@ -71,6 +64,9 @@ xyz=ipsec
     right=#.#.#.#
     rightsubnet=192.168.#.0/24
     status=enabled
+
+
+-- Extra testing/dev notes
 
 Fix errors from # ipsec verify with rp_filters
 

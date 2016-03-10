@@ -137,7 +137,7 @@
 
                     my $keyingtries =
                          $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )
-                      || $configDB->get_prop( $dbKey, 'keyingtries' ) ''
+                      || $configDB->get_prop( $dbKey, 'keyingtries' )
                       || '0';
                     $OUT .= "    keyingtries=$keyingtries\n";
 
