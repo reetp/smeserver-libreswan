@@ -16,6 +16,8 @@ Requires:  e-smith-release >= 9.0
 Requires:  libreswan >= 3.14
 AutoReqProv: no
 
+Patch1: smeserver-libreswan-fix-masq-templates.patch
+
 %description
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
@@ -113,6 +115,8 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 * Thu Jan 15 2015 John Crisp <jcrisp@safeandsoundit.co.uk> 0.1-1
 - initial release
+
+%patch1 -p1
 
 %prep
 %setup
