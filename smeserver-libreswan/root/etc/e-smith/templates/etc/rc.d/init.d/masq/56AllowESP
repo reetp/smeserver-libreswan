@@ -1,7 +1,7 @@
 # based on /etc/e-smith/templates/etc/rc.d/init.d/masq/55AllowGRE
 
 {
-my $ipsec_access = $ipsec{access};
+my $ipsec_access = $ipsec{access} || '';
 
 if ($ipsec_access eq 'public')  {
 

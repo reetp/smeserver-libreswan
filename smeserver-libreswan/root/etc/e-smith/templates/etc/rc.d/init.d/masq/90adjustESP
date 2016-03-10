@@ -1,6 +1,6 @@
 # based on /etc/e-smith/templates/etc/rc.d/init.d/masq/90adjustGRE
 {
-    my $ipsec_access = $ipsec{access};
+    my $ipsec_access = $ipsec{access} || '';
     my $ipsec_status = $ipsec{status};
         if ( $ipsec_access eq 'public' ) {
         
