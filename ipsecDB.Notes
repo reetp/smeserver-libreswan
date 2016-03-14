@@ -16,6 +16,7 @@ ipsec initnss --configdir /etc/ipsec.d
 
 ipsec newhostkey --output /etc/ipsec.d/rsa.secrets
 
+We need the following keys as our Left key and their Right key - the other end needs to do the same :
 ipsec showhostkey --left
 ipsec showhostkey --right
 
