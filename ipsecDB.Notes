@@ -8,10 +8,17 @@ We can now add rsasigs
 
 To generate run - ignore warnings :
 
-ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+Delete all old dbs
 
-We need the following key as our Left key and their Right key - the other need needs to do the same :
-ipsec showhostkey --left --file /etc/ipsec.d/rsa.secrets
+rm /etc/ipsec.d/*.db
+
+ipsec initnss --configdir /etc/ipsec.d
+
+ipsec newhostkey --output /etc/ipsec.d/rsa.secrets
+
+ipsec showhostkey --left
+ipsec showhostkey --right
+
 
 We then add them to our connection :
 
