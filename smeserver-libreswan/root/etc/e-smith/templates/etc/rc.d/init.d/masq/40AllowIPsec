@@ -1,9 +1,15 @@
+# Required PostRouting for VPN
 {
-    my $ipsec_access = $ipsec{access} || '';
+    my $ipsec_status = $ipsec{status} || '';
 
-    if ( $ipsec_access eq 'public' ) {
+print "Ipsec Information - 40AllowIpsec - $ipsec_status\n";
+
+    if ( $ipsec_access eq 'enabled' ) {
         $OUT .= "  # Do not NAT VPN traffic\n";
-        $OUT .=
-"  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT\n";
+        $OUT .= "  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT\n";
+    }
+
+    else {
+        $OUT .= " # 40AllowIPsec VPN POSTROUTING disabled\n";
     }
 }

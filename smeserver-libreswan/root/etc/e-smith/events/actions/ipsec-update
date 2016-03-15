@@ -21,6 +21,8 @@
 # Note that we do not need to use the init ipsec script - we can start and
 # stop directly using /usr/sbin/ipsec which will call the init script
 
+# Need to sort redirects now
+
 use strict;
 use warnings;
 use esmith::ConfigDB;
@@ -43,8 +45,8 @@ print "Ipsec Information - IpsecAccessState: $ipsec_access\n";
 if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
 
     # Do we check if it is already stopped ?
-    # For now we stop it regradless
-
+    # For now we stop it regardless
+        
     print "Ipsec Information - ipsec disabled - Stopping ipsec \n";
 
     # First set ipsec access to private which disables firewall rule
@@ -264,16 +266,11 @@ sub setRedirects {
       or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.default.send_redirects=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");
-
-    # I don;t beleive these are required
-    #    system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
-    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
-    #    system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
-    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
-    #    system("/sbin/sysctl -w net.ipv4.conf.eth0.accept_redirects=0") == 0
-    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
-    #    system("/sbin/sysctl -w net.ipv4.conf.eth1.accept_redirects=0") == 0
-    #      or die("Ipsec Error - A problem occurred with sysctl: $?");
+      
+    system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
+      or die("Ipsec Error - A problem occurred with sysctl: $?");
+    system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
+      or die("Ipsec Error - A problem occurred with sysctl: $?");
 
     system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
       or die("Ipsec Error - A problem occurred with sysctl: $?");

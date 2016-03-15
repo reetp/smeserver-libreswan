@@ -12,6 +12,7 @@ foreach (qw(
        /etc/ipsec.secrets
        /etc/ipsec.d/ipsec.conf
        /etc/ipsec.d/ipsec.secrets
+       /etc/rc.d/init.d/masq
     ))
 {
     templates2events("$_", qw(
