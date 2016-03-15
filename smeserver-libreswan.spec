@@ -128,7 +128,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %prep
 %setup
 %patch1 -p1
-%patch2 -p2
+%patch2 -p1
 
 %build
 perl createlinks
