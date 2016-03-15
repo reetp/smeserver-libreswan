@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 16
+%define release 17
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -10,17 +10,27 @@ URL: http://libreswan.org/
 Group: SMEserver/addon
 Source: %{name}-%{version}.tar.gz
 Patch1: smeserver-libreswan-fix-masq-templates.patch
+Patch2: smeserver-libreswan-move-logfile.patch
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
 Requires:  e-smith-release >= 9.0
-Requires:  libreswan >= 3.14
+Requires:  libreswan >= 3.16
 AutoReqProv: no
 
 %description
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Mon Mar 14 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-17.sme
+- Move pluto.log to /var/log/pluto
+- bump libreswan requires version to 3.16
+- regenerate masq template on ipsec-update
+- change wiki location page
+- move the v6neighbor-hole.conf to .old
+- add sysctl.conf template
+- modify masq templates for ipsec status enabled/disabled
+
 * Thu Mar 10 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-16.sme
 - Fix masq templates for missing db entries on install
 
@@ -118,6 +128,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %prep
 %setup
 %patch1 -p1
+%patch2 -p2
 
 %build
 perl createlinks
@@ -141,12 +152,13 @@ rm -rf %{name}-%{version}
 %preun
 %post
 
+mv /etc/ipsec.d/v6neighbor-hole.conf /etc/ipsec.d/v6neighbor-hole.old
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 /sbin/e-smith/expand-template /etc/inittab
 /sbin/init q
 
 
-echo "see http://wiki.contribs.org/IPSEC"
+echo "see http://wiki.contribs.org/VPN"
 
 %postun
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq

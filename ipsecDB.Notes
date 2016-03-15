@@ -21,12 +21,12 @@ ipsec showhostkey --left
 ipsec showhostkey --right
 
 
-We then add them to our connection :
+We then add them to our connection -make sure you use an ID, ESPECIALLY with a dynamic host involved:
 
-db ipsec_connections setprop LocalToRemote leftrsasig SomeLongStringFromLocalRSASecrets
-db ipsec_connections setprop LocalToRemote rightrsasig SomeLongStringFromRemoteRSASecrets
+db ipsec_connections setprop LocalToRemote leftrsasig SomeLongStringFromLocalRSASecrets leftid East rightid West
+db ipsec_connections setprop LocalToRemote rightrsasig SomeLongStringFromRemoteRSASecrets leftid West rightid East
 
-Be VERY careful copying these - one character out anywhere and it will not work
+Be VERY careful copying these public keys - one character out anywhere and it will not work
 
 Various refinements and bug fixes.
 
@@ -140,3 +140,6 @@ config setprop ipsec access public UDPPorts 500,4500 TCPPort 50,51
 l2tpd
 
 config setprop ipsec access public UDPPorts 500,4500,1701 TCPPort 50,51
+
+
+http://swan.libreswan.narkive.com/lg70MHRr/plicbd-pluto-6857-reapchild-failed-with-errno-10-no-child-processes

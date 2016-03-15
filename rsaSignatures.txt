@@ -1,5 +1,9 @@
 This is a tricky subject so please bear with me
 
+First we need to start the NSS database. THis only needs runnign once - if we delete the dbs then ipsec will recreate them on a restart
+
+ipsec initnss
+
 First we need to generate our keys as follows :
 
 ipsec newhostkey --output /etc/ipsec.d/rsa.secrets
@@ -18,13 +22,24 @@ This is where it gets trickier if you use 'Local' / 'Remote' as names - better t
 Remember that the only bit that we give out here is the PUBLIC part of the key on each server.
 
 
-On Test (this is funky !)
+On East
+
+To get a clean copy of the key
+
+cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'
+
+Be VERY CAREFUL when you copy and paste.
+
+
 
 db ipsec_connections setprop East leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
 
 That will set the left rsa key
 
 That key then needs to go on West as rightrsasig (EAST public key)
+
+
+
 
 
 db ipsec_connections setprop West leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
