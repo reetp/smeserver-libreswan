@@ -1,10 +1,11 @@
 # Required PostRouting for VPN
+
 {
     my $ipsec_status = $ipsec{status} || '';
 
-print "Ipsec Information - 40AllowIpsec - $ipsec_status\n";
+#   print "Ipsec Information - 40AllowIpsec - $ipsec_status\n";
 
-    if ( $ipsec_access eq 'enabled' ) {
+    if ( $ipsec_status eq 'enabled' ) {
         $OUT .= "  # Do not NAT VPN traffic\n";
         $OUT .= "  /sbin/iptables -t nat -I POSTROUTING -m policy --dir out --pol ipsec -j ACCEPT\n";
     }
