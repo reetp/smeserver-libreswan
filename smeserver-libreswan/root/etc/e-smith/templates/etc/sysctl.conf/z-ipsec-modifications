@@ -13,6 +13,7 @@ my $configDB = esmith::ConfigDB->open or die("can't open Config DB");
     if ( $configDB->get_prop( 'ipsec', 'status' ) eq 'enabled' ) {
 
         $OUT .= <<CONFIG_END
+# Ipsec overrides
 net.ipv4.conf.all.rp_filter = 0
 net.ipv4.conf.all.send_redirects = 0
 net.ipv4.conf.default.accept_redirects = 0
