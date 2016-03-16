@@ -151,11 +151,6 @@ rm -rf %{name}-%{version}
 %pre
 %preun
 %post
-
-if [-f /etc/ipsec.d/v6neighbor-hole.conf]; then
- mv  /etc/ipsec.d/v6neighbor-hole.conf /etc/ipsec.d/v6neighbor-hole.old
-fi
-
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 /sbin/e-smith/expand-template /etc/inittab
 /sbin/init q
