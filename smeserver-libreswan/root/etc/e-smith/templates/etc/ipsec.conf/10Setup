@@ -66,7 +66,7 @@
      chop($virtual_private);
      $OUT .= "$virtual_private\n";
      $OUT .= "\n";
-     $OUT .= "include /etc/ipsec.d/*.conf\n";
+     $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
 
  # End else
  }

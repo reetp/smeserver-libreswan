@@ -27,9 +27,9 @@ Libreswan is a free software implementation of the most widely supported and sta
 - bump libreswan requires version to 3.16
 - regenerate masq template on ipsec-update
 - change wiki location page
-- move the v6neighbor-hole.conf to .old
 - add sysctl.conf template
 - modify masq templates for ipsec status enabled/disabled
+- only load ipsec.conf rather than *.conf to avoid loading v6neighbor-hole.conf
 
 * Thu Mar 10 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-16.sme
 - Fix masq templates for missing db entries on install
@@ -152,7 +152,7 @@ rm -rf %{name}-%{version}
 %preun
 %post
 
-if [[-f /etc/ipsec.d/v6neighbor-hole.conf]]; then
+if [-f /etc/ipsec.d/v6neighbor-hole.conf]; then
  mv  /etc/ipsec.d/v6neighbor-hole.conf /etc/ipsec.d/v6neighbor-hole.old
 fi
 
