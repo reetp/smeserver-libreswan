@@ -1,6 +1,6 @@
 This is a tricky subject so please bear with me
 
-First we need to start the NSS database. THis only needs runnign once - if we delete the dbs then ipsec will recreate them on a restart
+First we need to start the NSS database. This only needs run once - if we delete the dbs then ipsec will recreate them on a restart
 
 ipsec initnss
 
@@ -14,7 +14,8 @@ We can use either of:
 
 ipsec showhostkey --left
 ipsec showhostkey --file /etc/ipsec.d/rsa.secrets --left
-cat rsa.secrets |grep pubkey
+
+cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'
 
 
 This is where it gets trickier if you use 'Local' / 'Remote' as names - better to stick to ServerA/ServerB or East/West

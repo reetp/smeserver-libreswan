@@ -1,10 +1,11 @@
-V 0.5.x Notes
+V 0.7.x Notes
 
 ** Note that nothing is guaranteed to work and it may break your system or deny you access **
 
 Also note that on occasion ipsec can get hung - I think this is when you enable/disable a few times quite quickly and the connection is still waiting on a timeout
 
-We can now add rsasigs
+
+RSA passwords. These are much stronger than standard passwords.
 
 To generate run - ignore warnings :
 
