@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 17
+%define release 18
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -11,6 +11,7 @@ Group: SMEserver/addon
 Source: %{name}-%{version}.tar.gz
 Patch1: smeserver-libreswan-fix-masq-templates.patch
 Patch2: smeserver-libreswan-move-logfile.patch
+Patch3: smeserver-libreswan-add-debug-key.patch
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
@@ -22,6 +23,11 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Thu Mar 24 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-18.sme
+- Add debug db key to /etc/ipsec.conf
+- Remove setting public/private keys as they won't affect unless templates are re-expanded
+- Set xfrm_larval_drop correctly
+
 * Tue Mar 22 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-17.sme
 - Move pluto.log to /var/log/pluto
 - bump libreswan requires version to 3.16
@@ -129,6 +135,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %setup
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 perl createlinks
@@ -151,6 +158,7 @@ rm -rf %{name}-%{version}
 %pre
 %preun
 %post
+
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
 /sbin/e-smith/expand-template /etc/inittab
 /sbin/init q

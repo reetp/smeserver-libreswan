@@ -28,6 +28,8 @@ status: Default disabled | enabled
 access: Default private | public
 UDPPort: Default 500 | Variable
 auto: Default start | add (do not use ondemand or ignore)
+debug: none | all raw crypt parsing emitting contril controlmore lifecycle dns dpd klips pfkey natt oppo oppoinfo whackwatch private
+(all generates a large amount of logging so use with care)
 
 Overall settings - can be in main config db or in ipsec_connections as per connection
 
