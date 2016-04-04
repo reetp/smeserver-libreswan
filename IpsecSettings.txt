@@ -33,6 +33,7 @@ debug: none | all raw crypt parsing emitting contril controlmore lifecycle dns d
 
 Overall settings - can be in main config db or in ipsec_connections as per connection
 
+security: secret | rsasig
 ikelifetime: Default 3600s | Variable
 salifetime: Default 28800s | Variable
 dpdaction: Default restart | Variable
