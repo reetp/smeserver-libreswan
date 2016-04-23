@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 19
+%define release 20
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -13,6 +13,7 @@ Patch1: smeserver-libreswan-fix-masq-templates.patch
 Patch2: smeserver-libreswan-move-logfile.patch
 Patch3: smeserver-libreswan-add-debug-key.patch
 Patch4: smeserver-libreswan-fix-rsa-id.patch
+Patch5: smeserver-libreswan-fix-createlinks.patch
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
@@ -24,6 +25,8 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Sat Apr 23 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-20.sme
+- Fix typo in createlinks for sysctl.conf
 
 * Mon Apr 04 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-19.sme
 - Fix ID in ipsec.secrets if ID is set
@@ -142,6 +145,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 %build
 perl createlinks
