@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 16
+%define release 20
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -10,17 +10,41 @@ URL: http://libreswan.org/
 Group: SMEserver/addon
 Source: %{name}-%{version}.tar.gz
 Patch1: smeserver-libreswan-fix-masq-templates.patch
+Patch2: smeserver-libreswan-move-logfile.patch
+Patch3: smeserver-libreswan-add-debug-key.patch
+Patch4: smeserver-libreswan-fix-rsa-id.patch
+Patch5: smeserver-libreswan-fix-createlinks.patch
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
 Requires:  e-smith-release >= 9.0
-Requires:  libreswan >= 3.14
+Requires:  libreswan >= 3.16
 AutoReqProv: no
 
 %description
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Sat Apr 23 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-20.sme
+- Fix typo in createlinks for sysctl.conf
+
+* Mon Apr 04 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-19.sme
+- Fix ID in ipsec.secrets if ID is set
+
+* Thu Mar 24 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-18.sme
+- Add debug db key to /etc/ipsec.conf
+- Remove setting public/private keys as they won't affect unless templates are re-expanded
+- Set xfrm_larval_drop drop correctly
+
+* Tue Mar 22 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-17.sme
+- Move pluto.log to /var/log/pluto
+- bump libreswan requires version to 3.16
+- regenerate masq template on ipsec-update
+- change wiki location page
+- add sysctl.conf template
+- modify masq templates for ipsec status enabled/disabled
+- only load ipsec.conf rather than *.conf to avoid loading v6neighbor-hole.conf
+
 * Thu Mar 10 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-16.sme
 - Fix masq templates for missing db entries on install
 
@@ -118,6 +142,10 @@ Libreswan is a free software implementation of the most widely supported and sta
 %prep
 %setup
 %patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
 
 %build
 perl createlinks
@@ -146,7 +174,7 @@ rm -rf %{name}-%{version}
 /sbin/init q
 
 
-echo "see http://wiki.contribs.org/IPSEC"
+echo "see http://wiki.contribs.org/VPN"
 
 %postun
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq

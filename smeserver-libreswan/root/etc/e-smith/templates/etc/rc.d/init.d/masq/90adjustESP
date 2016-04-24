@@ -1,12 +1,16 @@
 # based on /etc/e-smith/templates/etc/rc.d/init.d/masq/90adjustGRE
-{
-    my $ipsec_access = $ipsec{access} || '';
-    my $ipsec_status = $ipsec{status};
-        if ( $ipsec_access eq 'public' ) {
-        
-        my $target = ( $ipsec_status eq 'enabled' ) ? "ACCEPT" : "denylog";
 
+{
+    my $ipsec_status = $ipsec{status} || '';
+
+#    print "Ipsec Information - 90AdjustESP - $ipsec_status\n";
+
+    if ( $ipsec_status eq 'enabled' ) {
+        my $target = ( $ipsec_status eq 'enabled' ) ? "ACCEPT" : "denylog";
         $OUT .= "    /sbin/iptables --replace esp-in 1 ! -d \$OUTERNET -j denylog\n";
         $OUT .= "    /sbin/iptables --replace esp-in 2 -j $target\n";
+    }
+    else {
+        $OUT .= " # 90adjustESP disabled\n";
     }
 }

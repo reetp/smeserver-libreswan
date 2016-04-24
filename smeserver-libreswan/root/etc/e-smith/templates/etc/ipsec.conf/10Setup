@@ -23,14 +23,15 @@
   my $dbKey = 'ipsec';
 
   # Generic setup file
-
+  my $debugstatus = $configDB->get_prop( $dbKey, 'debug' ) || 'none';
+  
 # A standard config is included in the RPM but we need to generate a new one so we can modify settings
 
   $OUT .= "config setup\n";
   $OUT .= "    protostack=netkey\n";
-  $OUT .= "    #plutodebug=none\n";
+  $OUT .= "    plutodebug=$debugstatus\n";
   $OUT .= "    #klipsdebug=none\n";
-  $OUT .= "    plutostderrlog=/var/log/pluto.log\n";
+  $OUT .= "    plutostderrlog=/var/log/pluto/pluto.log\n";
   $OUT .= "    dumpdir=/var/run/pluto/\n";
   $OUT .= "    nat_traversal=yes\n";
 
@@ -66,7 +67,7 @@
      chop($virtual_private);
      $OUT .= "$virtual_private\n";
      $OUT .= "\n";
-     $OUT .= "include /etc/ipsec.d/*.conf\n";
+     $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
 
  # End else
  }

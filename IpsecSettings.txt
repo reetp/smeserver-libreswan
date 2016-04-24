@@ -1,3 +1,5 @@
+smeserver-libreswan-0.5
+
 Config settings
 
 For other options see here 
@@ -26,23 +28,25 @@ status: Default disabled | enabled
 access: Default private | public
 UDPPort: Default 500 | Variable
 auto: Default start | add (do not use ondemand or ignore)
+debug: none | all raw crypt parsing emitting contril controlmore lifecycle dns dpd klips pfkey natt oppo oppoinfo whackwatch private
+(all generates a large amount of logging so use with care)
 
-Overall settings - can be overwritten per connection
+Overall settings - can be in main config db or in ipsec_connections as per connection
 
+security: secret | rsasig
 ikelifetime: Default 3600s | Variable
 salifetime: Default 28800s | Variable
 dpdaction: Default restart | Variable
 dpddelay: Default 30 | Variable
 dpdtimeout: Default 10 | Variable
 pfs: Default yes | Variable
-iptype: Default stattodyn | dyntostat - are we a static host to dynamic client or vicve versa ?
 connectiontype: Default secret | rassig, certificate
-ike: Default Empty | aes-sha1
+ike: Default aes-sha1 | variable - see ipsec.conf readme file for more options
 
 
 Per connection only settings
 
-Automatically modified
+Automatically modified - do not change this
 PreviousState: Denotes previous connection state
 
 Manual keys
@@ -51,14 +55,14 @@ db ipsec_connections show
 
 db ipsec_connections setprop ConnectionName $key $property
 
-iptype: Default Empty | stattodyn, dyntostat | Configure static or dynamic IP host
+iptype: Default Emtpy | stattodyn or dyntostat - are we a static host to dynamic client or vice versa ? - Only required for dynamic clients with static hosts
 connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
 ipsecversion: Default Empty - v1 | If this is set v2 then only v2 will be allowed
 phase2: aes-sha1 | Various
 mtu: Default Empty | Various
-left: Default %defaultroute | Variable - usually local WAN IP
+left: Default Empty | If Empty then %defaultroute is set. Can be local WAN IP
 leftid: Default Empty | Variable
 leftsourceip:  Default Empty | This server local IP
 leftsubnet:  Default Empty | This server local subnet
@@ -68,14 +72,17 @@ rightsubnet:  Default Empty | Destination subnet
 passwd| Default Empty | Variable
 keyingtries| Default Empty | 0 is default - 'forever'
 
+# Future
 # certname: Default Empty | Your certificate name
 # leftcert
 # rightca: Default %same
 
 
-For a basic connection you need this as a bare minimum
+*** For a basic connection you need this as a bare minimum ***
 
-Note we use 'set' when we create new connection. Thereafter you can modify it with setprop
+config setprop ipsec status enabled access public
+
+Note for ipsec_connections we use 'set' when we create new connection. Thereafter you can modify it with setprop
 
 Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
 db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 passwd MyPassWd
@@ -83,42 +90,7 @@ db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 l
 Remote - WAN IP 1.2.3.4 Local IP 10.0.0.1 Subnet 10.0.0.0/24
 db ipsec_connections set MyWest ipsec status enabled leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 passwd MyPassWd
 
-
-For a rsasig connection
-ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
-When you copy the key it MUST be in one long line.
-
-Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
-db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 security rsasig leftid East rightid West rsasig SomeLongPasswordFromWest
-
-Remote - WAN IP 1.2.3.4 Local IP 10.0.0.1 Subnet 10.0.0.0/24
-db ipsec_connections set MyWest ipsec status enabled leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West rsasig SomeLongEastPasswordFromEast
-
-
-For a rsasig connection with dynamic IP
-ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
-When you copy the key it MUST be in one long line.
-East needs to create a key and send it to West. West needs to create a key and send it to East
-
-Note that with dynamic IPs we have to allow connections from anywhere which is not as safe as fixed IPs.
-We therefore recommend setting security rsasig, ike v2, and use leftid/rightid to enhance security
-
-We set the static server to:
-auto 'add' so it only listens for incoming connections
-dpdaction 'clear' so the route is cleared if the connection is dropped
-
-We set the dynamic server to:
-auto 'start' so it immediately attempts to connect
-
-
-Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
-db ipsec_connections set MyEast ipsec status enabled auto add dpdaction clear leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right %any rightsubnet 10.0.0.0/24 security rsasig leftid=East rightid West rsasig SomeLongPasswordFromWest
-
-Remote - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
-db ipsec_connections set MyWest ipsec status enabled auto start left %any leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West rsasig SomeLongEastPasswordFromEast
-
-
-Bare minimum config for ipsec with static hosts
+Bare minimum config for ipsec with static hosts (ike is automatically added)
 
 MyConnection=ipsec
     ike=aes-sha1
@@ -128,3 +100,75 @@ MyConnection=ipsec
     right=1.2.3.4
     rightsubnet=192.68.60.0/24
     status=enabled
+
+
+signal-event ipsec-update
+
+Check /var/log/pluto/pluto.log
+ipsec whack --status
+ipsec verify (may be some warnings - severity depends on what they are)
+
+
+*** For a rsasig connection ***
+
+Please see the section on generating rsa Signatures.
+
+The FIRST time you must run this command to setup the dbs. Thereafter if you delete them NSS will regenerate new dbs and you do not need to do this.
+
+ipsec initnss
+
+ipsec newhostkey --random /dev/random --output /etc/ipsec.d/rsa.secrets
+
+When you copy the key it MUST be in one long line.
+
+Remember
+
+East
+leftrsasig=PUBLIC key of East
+rightrsasig=PUBLIC key of West
+
+West
+leftrsasig=PUBLIC key of West
+rightrsasig=PUBLIC key of East
+
+
+You MUST use IDs, ESPECIALLY if you have a dynamic IP at one end.
+
+Local - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
+db ipsec_connections set MyEast ipsec status enabled leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 right 1.2.3.4 rightsubnet 10.0.0.0/24 security rsasig leftid East rightid West leftrsasig SomeLongPassFromEast rightrsasig SomeLongPasswordFromWest
+
+Remote - WAN IP 1.2.3.4 Local IP 10.0.0.1 Subnet 10.0.0.0/24
+db ipsec_connections set MyWest ipsec status enabled leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid West leftrsasig SomeLongPassFromWest rightrsasig SomeLongEastPasswordFromEast
+
+
+*** For a rsasig connection with dynamic IP ***
+
+This will set your local 'left' rsasig
+
+db ipsec_connections setprop East leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
+
+Then Extract the public key for the far end. When you copy the key it MUST be in one long line.
+
+cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'
+
+East needs to create a set of keys and send the public key to West. West needs to create a set of keys key and send the public key to East
+
+Note that with dynamic IPs we have to allow connections from anywhere which is not as safe as fixed IPs.
+We therefore recommend setting security rsasig, ike v2, and use leftid/rightid to enhance security
+
+We set the static server to:
+auto 'add' so it only listens for incoming connections
+dpdaction 'clear' so the route is cleared if the connection is dropped
+iptype stattodyn - sets right = %any (allow all hosts to 
+
+We set the dynamic server to:
+auto 'start' so it immediately attempts to connect
+iptype dyntostat
+
+Local - MyEast - WAN IP 5.6.7.8 Local IP 192.168.20.1 Subnet 192.168.20.0/24
+db ipsec_connections set MyEast ipsec status enabled iptype stattodyn auto add dpdaction clear leftsourceip 192.168.20.1 leftsubnet 192.168.20.0/24 rightsubnet 10.0.0.0/24 security rsasig leftid East rightid West leftrsasig SomeLongPassFromEast rightrsasig SomeLongPasswordFromWest
+
+Remote MyWest - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
+db ipsec_connections set MyWest ipsec status enabled iptype dyntostat auto start leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid East leftrsasig SomeLongPassFromWest rightrsasig SomeLongEastPasswordFromEast
+
+

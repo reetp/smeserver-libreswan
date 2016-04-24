@@ -1,0 +1,64 @@
+Script logic
+
+access = public/public
+
+If disabled we should force access = private but this wouldn't get picked on service restart up as the templates are already expanded
+
+Currently disabled
+
+Here is a list of the rough logic of the ipsec-update script
+
+Stopped & Disabled
+
+# expand-templates
+If stopped & disabled
+    set access private
+    stop ipsec service
+    reset redirects
+# restart services
+
+Stopped & Enabled
+
+# expand-templates
+If stopped & enabled
+    set access public
+    reset redirects
+# restart services
+
+Started
+
+# expand-templates
+set access public
+If started and enabled
+    reset redirects
+    Check previous status
+    Reread secrets
+    If en-en
+    auto replace
+        If start
+        auto --up
+        changestate
+    
+    Elseif dis-dis
+    stop
+    changestate
+
+    Elseif dis-en
+    auto --replace
+        If start
+        auto --up
+        changestate
+
+    Elseif en-dis
+    stop
+    changestate
+
+
+If not started and enabled
+    reset redirects
+    set access public
+    start service
+
+# restart services
+
+

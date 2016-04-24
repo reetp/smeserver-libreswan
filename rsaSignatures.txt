@@ -1,0 +1,72 @@
+This is a tricky subject so please bear with me
+
+First we need to start the NSS database. This only needs run once - if we delete the dbs then ipsec will recreate them on a restart
+
+ipsec initnss
+
+First we need to generate our keys as follows :
+
+ipsec newhostkey --output /etc/ipsec.d/rsa.secrets
+
+We need JUST the public key portion at each end.
+
+We can use either of:
+
+ipsec showhostkey --left
+ipsec showhostkey --file /etc/ipsec.d/rsa.secrets --left
+
+cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'
+
+
+This is where it gets trickier if you use 'Local' / 'Remote' as names - better to stick to ServerA/ServerB or East/West
+
+Remember that the only bit that we give out here is the PUBLIC part of the key on each server.
+
+
+On East
+
+To get a clean copy of the key
+
+cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'
+
+Be VERY CAREFUL when you copy and paste.
+
+
+
+db ipsec_connections setprop East leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
+
+That will set the left rsa key
+
+That key then needs to go on West as rightrsasig (EAST public key)
+
+
+
+
+
+db ipsec_connections setprop West leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
+
+That key then needs to go on West as rightrsasig (EAST public key)
+
+
+In short
+
+East
+leftrsasig=PUBLIC key of East
+rightrsasig=PUBLIC key of West
+
+West
+leftrsasig=PUBLIC key of West
+rightrsasig=PUBLIC key of East
+
+
+Emergencies....
+
+To delete all old dbs
+
+rm /etc/ipsec.d/*.db
+rm /etc/ipsec.d/pkcs11.txt
+
+signal-event post-upgrade;signal-event reboot
+
+ipsec will generate new dbs for you on restart
+
