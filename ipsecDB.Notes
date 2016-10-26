@@ -32,6 +32,8 @@ IPSec (VPN tunneling) uses the following ports:
 L2TPD
 1701 (L2TP)
 
+IPSEC v2 requires 4500
+May need to change ipsec UDPPort 500 to UDPPorts 500,4500
 
 
 the rp_filter and send redirects are directly set in sysctl.conf and manipulated by the ipsec-update script
