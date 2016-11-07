@@ -14,6 +14,7 @@ Patch2: smeserver-libreswan-move-logfile.patch
 Patch3: smeserver-libreswan-add-debug-key.patch
 Patch4: smeserver-libreswan-fix-rsa-id.patch
 Patch5: smeserver-libreswan-fix-createlinks.patch
+Patch6: smeserver-libreswan-ikev2-logrotate.patch
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
@@ -151,6 +152,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 perl createlinks
