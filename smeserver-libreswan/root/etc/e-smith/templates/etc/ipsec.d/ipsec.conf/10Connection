@@ -108,10 +108,13 @@
                         $OUT .= "    auto=$auto\n";
                     }
 
-                    my $ipsecversion = $ipsecDB->get_prop( $ipsecprop, 'ipsecversion' ) || 'permit';
-                    
-                        $OUT .= "    ikev2=$ipsecversion\n";
-                    
+                    # We should change ipsecversion to ikev2status
+                    my $ipsecversion =
+                         $ipsecDB->get_prop( $ipsecprop, 'ipsecversion' )
+                      || $configDB->get_prop( $dbKey, 'ipsecversion' )
+                      || 'permit';
+
+                    $OUT .= "    ikev2=$ipsecversion\n";
 
                     # Set the Phase one and Phase two default strengths - these are set to aes
                     my $ike =
