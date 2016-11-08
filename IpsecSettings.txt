@@ -42,6 +42,7 @@ dpdtimeout: Default 10 | Variable
 pfs: Default yes | Variable
 connectiontype: Default secret | rassig, certificate
 ike: Default aes-sha1 | variable - see ipsec.conf readme file for more options
+ipsecversion: Default permit | Whether to allow ikev2 - also : insist/propose/yes/never/no
 
 
 Per connection only settings
