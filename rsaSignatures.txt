@@ -43,7 +43,7 @@ That key then needs to go on West as rightrsasig (EAST public key)
 
 
 
-db ipsec_connections setprop West leftrsasig `cat rsa.secrets |grep pubkey |sed 's/.*key=//'`
+db ipsec_connections setprop West leftrsasig `cat /etc/ipsec.d/rsa.secrets |grep pubkey |sed 's/.*key=//'`
 
 That key then needs to go on West as rightrsasig (EAST public key)
 

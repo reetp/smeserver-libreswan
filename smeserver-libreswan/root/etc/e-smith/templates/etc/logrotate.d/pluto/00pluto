@@ -1,8 +1,0 @@
-/var/log/pluto/pluto.log \{
-    missingok
-    notifempty
-    compress
-    daily
-    rotate 10
-    create 0600 root root
-\}

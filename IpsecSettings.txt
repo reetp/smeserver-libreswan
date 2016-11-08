@@ -28,7 +28,7 @@ status: Default disabled | enabled
 access: Default private | public
 UDPPort: Default 500 | Variable
 auto: Default start | add (do not use ondemand or ignore)
-debug: none | all raw crypt parsing emitting contril controlmore lifecycle dns dpd klips pfkey natt oppo oppoinfo whackwatch private
+debug: none | all raw crypt parsing emitting control controlmore lifecycle dns dpd klips pfkey natt oppo oppoinfo whackwatch private
 (all generates a large amount of logging so use with care)
 
 Overall settings - can be in main config db or in ipsec_connections as per connection
@@ -42,6 +42,7 @@ dpdtimeout: Default 10 | Variable
 pfs: Default yes | Variable
 connectiontype: Default secret | rassig, certificate
 ike: Default aes-sha1 | variable - see ipsec.conf readme file for more options
+ipsecversion: Default permit | Whether to allow ikev2 - also : insist/propose/yes/never/no
 
 
 Per connection only settings
@@ -59,7 +60,7 @@ iptype: Default Emtpy | stattodyn or dyntostat - are we a static host to dynamic
 connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
-ipsecversion: Default Empty - v1 | If this is set v2 then only v2 will be allowed
+ipsecversion: Default permit | Whether to allow ikev2 - also : insist/propose/yes/never/no 
 phase2: aes-sha1 | Various
 mtu: Default Empty | Various
 left: Default Empty | If Empty then %defaultroute is set. Can be local WAN IP
@@ -171,4 +172,11 @@ db ipsec_connections set MyEast ipsec status enabled iptype stattodyn auto add d
 Remote MyWest - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
 db ipsec_connections set MyWest ipsec status enabled iptype dyntostat auto start leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid East leftrsasig SomeLongPassFromWest rightrsasig SomeLongEastPasswordFromEast
 
+Ipsec v2
 
+May need to change the following key:
+ipsec UDPPort 500 to UDPPorts 500,4500
+
+config delprop ipsec UDPPort
+config setprop ipsec UDPPorts 500,4500
+signal-event remoteaccess-update
