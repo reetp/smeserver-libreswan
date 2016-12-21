@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 22
+%define release 21
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -15,7 +15,7 @@ Patch3: smeserver-libreswan-add-debug-key.patch
 Patch4: smeserver-libreswan-fix-rsa-id.patch
 Patch5: smeserver-libreswan-fix-createlinks.patch
 Patch6: smeserver-libreswan-ikev2-logrotate.patch
-Patch7: smeserver-libreswan-status-check.patch
+
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -29,12 +29,10 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 * Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-22.sme
-- Fix some log noise when first installed and still disabled
-
-* Wed Oct 26 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-21.sme
 - add more variations for ike v1/2
 - remove logrotate template
 - add /etc/e-smith/events/logrotate/logfiles2timestamp/var/log/pluto.log
+- Fix some log noise when first installed and still disabled
 
 * Sat Apr 23 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-20.sme
 - Fix typo in createlinks for sysctl.conf
@@ -158,7 +156,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
-%patch7 -p1
+
 
 %build
 perl createlinks
