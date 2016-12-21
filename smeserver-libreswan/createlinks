@@ -38,3 +38,20 @@ service_link_enhanced("ipsec", "K21", "0");
 service_link_enhanced("ipsec", "K21", "1");
 
 safe_symlink("adjust", "root/etc/e-smith/events/$event/services2adjust/masq");
+
+# Set up generic logfile timestamp renaming/symlinking
+
+foreach (qw(
+    /var/log/pluto/pluto.log
+    ))
+{
+    safe_touch "root/etc/e-smith/events/logrotate/logfiles2timestamp/$_";
+}
+
+#--------------------------------------------------
+# actions for logrotate event
+#--------------------------------------------------
+
+$event = "logrotate";
+
+safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/ipsec");
