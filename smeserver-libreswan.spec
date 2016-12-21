@@ -29,7 +29,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 * Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-22.sme
-- bump version as I missed one earlier
+- fix logrotate path
 
 * Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-21.sme
 - add more variations for ike v1/2
