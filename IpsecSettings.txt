@@ -172,9 +172,19 @@ db ipsec_connections set MyEast ipsec status enabled iptype stattodyn auto add d
 Remote MyWest - WAN IP %variable Local IP 10.0.0.1 Subnet 10.0.0.0/24
 db ipsec_connections set MyWest ipsec status enabled iptype dyntostat auto start leftsourceip 10.0.0.1 leftsubnet 10.0.0.0/24 right 5.6.7.8 rightsubnet 192.168.20.0/24 security rsasig leftid West rightid East leftrsasig SomeLongPassFromWest rightrsasig SomeLongEastPasswordFromEast
 
+You can't ping across the network unless you add a 'local' connection to the server.
+
+Either do that in the Server manager or like this
+
+config set networks 192.168.10.0 network Mask 255.255.255.0 Router 192.168.97.1
+
+(?) network-create 192.168.10.0
+/etc/e-smith/events/actions/generic_template_expand
+
+
 Ipsec v2
 
-May need to change the following key:
+May need to change the following key (done in contrib now):
 ipsec UDPPort 500 to UDPPorts 500,4500
 
 config delprop ipsec UDPPort
