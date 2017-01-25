@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 22
+%define release 23
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -15,7 +15,8 @@ Patch3: smeserver-libreswan-add-debug-key.patch
 Patch4: smeserver-libreswan-fix-rsa-id.patch
 Patch5: smeserver-libreswan-fix-createlinks.patch
 Patch6: smeserver-libreswan-ikev2-logrotate.patch
-Patch7: smeserver-libreswan-status-check.patch
+Patch7: smeserver-libreswan-add-certificates.patch
+
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -28,13 +29,19 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
-* Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-22.sme
-- Fix some log noise when first installed and still disabled
+* Wed Jan 25 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-23.sme
+- Add the ability to use PEM/PKCS#12 certificates - fixes [SME: 9942]
+- lots of code tidying
 
-* Wed Oct 26 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-21.sme
+* Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-22.sme
+- update logrotate completely now I realise it is symlinked
+- remove UPDPort and add UPDPorts due to ipsec v2
+
+* Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-21.sme
 - add more variations for ike v1/2
 - remove logrotate template
 - add /etc/e-smith/events/logrotate/logfiles2timestamp/var/log/pluto.log
+- Fix some log noise when first installed and still disabled
 
 * Sat Apr 23 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-20.sme
 - Fix typo in createlinks for sysctl.conf
