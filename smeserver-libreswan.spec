@@ -30,7 +30,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 %changelog
 * Wed Jan 25 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-23.sme
-- Add the ability to use PEM/PKCS#12 certificates
+- Add the ability to use PEM/PKCS#12 certificates - fixes [SME: 9942]
 - lots of code tidying
 
 * Wed Dec 21 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-22.sme
