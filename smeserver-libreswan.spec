@@ -29,7 +29,7 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
-* Wed Jan 25 2016 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-23.sme
+* Wed Jan 25 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-23.sme
 - Add the ability to use PEM/PKCS#12 certificates
 - lots of code tidying
 
