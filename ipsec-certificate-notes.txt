@@ -1,0 +1,72 @@
+This requires you to have some way to generate certificates. If you have libreswan installed it can be done on the libreswan machine.
+See the Libreswan wiki for details https://libreswan.org/wiki/Using_NSS_with_libreswan#Using_certificates_with_NSS
+
+A better solution may be to install the phpki contrib from https://wiki.contribs.org/PHPki
+
+Ultimately you will need:
+
+A CA (Certificate Authority) root certificate which was used to generate any user certificates
+A user certificate for each end, preferably in PKCS#12 format.
+Make sure the certificate use is for VPN LCient and VPN Server
+
+On Libreswan
+
+Get the CA Cert in PEM format and import it:
+
+certutil -A -a -i ./mycacert.pem -d sql:/etc/ipsec.d -n "CAmycacert" -t 'CT,,'
+
+Now get the private keys in p12 format and import them. Better to use a one word 'Common Name' when you create it
+
+e.g. Use 'LocalServer' rather than 'Local Server'
+
+You can use a password if required
+
+ipsec import 'LocalServer.p12'
+ipsec import 'RemoteServer.p12'
+
+pk12util: PKCS12 IMPORT SUCCESSFUL
+
+Check the certificates:
+
+certutil -L -d sql:/etc/ipsec.d
+
+[root@test ~]# certutil -L -d sql:/etc/ipsec.d
+
+Certificate Nickname                                   Trust Attributes
+                                                       SSL,S/MIME,JAR/XPI
+
+CAmycacert                                             CT,, 
+LocalServer                                            u,u,u
+RemoteServer                                           u,u,u
+
+Delete a cert:
+
+certutil -D -d sql:/etc/ipsec.d -n "cert_nickname"
+
+
+Keys we have to set specifically for certificates:
+
+security certs
+leftcert LeftCertName
+rightcert RightCertName
+
+
+
+Example configuration - the rest of the settings should be defaults
+
+LocalToRemote=ipsec
+    leftcert=LocalServer
+    leftsourceip=192.168.1.1
+    leftsubnet=192.168.1.0/24
+    right=5.6.7.8
+    rightcert=RemoteServer
+    rightsubnet=192.168.100.0/24
+    security=certs
+    status=enabled
+
+Default settings
+
+leftrsasig %cert
+rightrsasig %cert
+leftid %fromcert
+rightid %fromcert
