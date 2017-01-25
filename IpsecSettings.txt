@@ -33,7 +33,7 @@ debug: none | all raw crypt parsing emitting control controlmore lifecycle dns d
 
 Overall settings - can be in main config db or in ipsec_connections as per connection
 
-security: secret | rsasig
+security: secret | rsasig | certs
 ikelifetime: Default 3600s | Variable
 salifetime: Default 28800s | Variable
 dpdaction: Default restart | Variable
@@ -69,14 +69,19 @@ leftsourceip:  Default Empty | This server local IP
 leftsubnet:  Default Empty | This server local subnet
 right: Default Empty | Destination WAN IP
 rightid: Default Empty | Variable
-rightsubnet:  Default Empty | Destination subnet
-passwd| Default Empty | Variable
-keyingtries| Default Empty | 0 is default - 'forever'
+rightsubnet: Default Empty | Destination subnet
+passwd: Default Empty | Variable
+keyingtries: Default Empty | 0 is default - 'forever'
 
-# Future
-# certname: Default Empty | Your certificate name
-# leftcert
-# rightca: Default %same
+leftcert Default Empty | LeftCertName
+rightcert Default Empty | RightCertName
+
+For certificates - do not set or leave the following empty:
+leftrsasig: Default Empty - system generates %cert
+rightrsasig: Default Empty - system generates %cert
+leftid: Default Empty - system generates %fromcert
+rightid: Default Empty - system generates %fromcert
+
 
 
 *** For a basic connection you need this as a bare minimum ***
@@ -181,6 +186,23 @@ config set networks 192.168.10.0 network Mask 255.255.255.0 Router 192.168.97.1
 (?) network-create 192.168.10.0
 /etc/e-smith/events/actions/generic_template_expand
 
+*** for a certificate based connection ***
+
+Please see ipsec-certificate-notes.txt for help on setting up certificates.
+
+A basic configuration should look like this:
+
+db ipsec_connections set LocalToRemote ipsec leftcert LocalServer leftsourceip 192.168.1.1  leftsubnet 192.168.1.0/24  right 5.6.7.8 rightcert RemoteServer rightsubnet 192.168.100.0/24 security certs status enabled
+
+LocalToRemote=ipsec
+    leftcert=LocalServer
+    leftsourceip=192.168.1.1
+    leftsubnet=192.168.1.0/24
+    right=5.6.7.8
+    rightcert=RemoteServer
+    rightsubnet=192.168.100.0/24
+    security=certs
+    status=enabled
 
 Ipsec v2
 
