@@ -194,7 +194,7 @@ rm -rf %{name}-%{version}
 /sbin/init q
 
 
-echo "see http://wiki.contribs.org/VPN"
+echo "see https://wiki.contribs.org/Libreswan"
 
 %postun
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
