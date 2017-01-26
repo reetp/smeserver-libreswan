@@ -200,7 +200,7 @@
 
                 # These ONLY come from the ipsec_configurations db
                 elsif ( ( my $leftid = $ipsecDB->get_prop( $ipsecprop, 'leftid' ) || '' ) ne '' ) {
-                    $OUT .= "    leftid=\@$leftid\n";
+                    $OUT .= "    leftid=$leftid\n";
                 }
 
                 my $leftsourceip = $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' )
@@ -228,7 +228,7 @@
                 }
 
                 elsif ( ( my $rightid = $ipsecDB->get_prop( $ipsecprop, 'rightid' ) || '' ) ne '' ) {
-                    $OUT .= "    rightid=\@$rightid\n";
+                    $OUT .= "    rightid=$rightid\n";
                 }
 
                 my $rightsubnet = $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
