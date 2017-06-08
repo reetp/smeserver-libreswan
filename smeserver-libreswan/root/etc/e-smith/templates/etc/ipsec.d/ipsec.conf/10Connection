@@ -29,215 +29,226 @@
 
         foreach my $ipsecprop (@connections) {
 
-            # first we verify if IPSec is enabled for the connection
+            unless ( $ipsecprop = 'L2TPD-PSK' ) {
 
-            my $ipsecstatus = $ipsecDB->get_prop( $ipsecprop, 'status' ) || 'disabled';
+                # first we verify if IPSec is enabled for the connection
 
-            if ( $ipsecstatus eq 'enabled' ) {
+                my $ipsecstatus = $ipsecDB->get_prop( $ipsecprop, 'status' ) || 'disabled';
 
-                $OUT .= "conn $ipsecprop\n";
-                
-                # These should be from $configDB-> ipsec
+                if ( $ipsecstatus eq 'enabled' ) {
 
-                # Not templated this - maybe later with L2TPD
-                # We currently use a password file but this could be integrated with other authent later
+                    $OUT .= "conn $ipsecprop\n";
 
-                # Lazy - assume that it is security (password by default) - options are rsasig|certs
+                    # These should be from $configDB-> ipsec
 
-                # Careful - property 'type' has a special meaning in configDB and returns 'service'
+                    # Not templated this - maybe later with L2TPD
+                    # We currently use a password file but this could be integrated with other authent later
 
-                my $connectiontype = $configDB->get_prop( $dbKey, 'connectiontype' )
-                  || 'tunnel';
-                $OUT .= "    type=$connectiontype\n";
+                    # Lazy - assume that it is security (password by default) - options are rsasig|certs
 
-                my $security = $ipsecDB->get_prop( $ipsecprop, 'security' )
-                  || 'secret';
+                    # Careful - property 'type' has a special meaning in configDB and returns 'service'
 
-                # my $certname = $ipsecDB->get_prop( "$ipsecprop", 'certname' ) || ''; ???? Is this required ?
+                    my $connectiontype = $configDB->get_prop( $dbKey, 'connectiontype' )
+                      || 'tunnel';
+                    $OUT .= "    type=$connectiontype\n";
 
-                if ( $security eq 'rsasig' ) {
-                    $OUT .= "    authby=rsasig\n";
+                    my $security = $ipsecDB->get_prop( $ipsecprop, 'security' )
+                      || 'secret';
 
-                    my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
+                    # my $certname = $ipsecDB->get_prop( "$ipsecprop", 'certname' ) || ''; ???? Is this required ?
+
+                    if ( $security eq 'rsasig' ) {
+                        $OUT .= "    authby=rsasig\n";
+
+                        my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
+                          || '';
+                        $OUT .= "    leftrsasigkey=$leftrsasig\n";
+
+                        my $rightrsasig = $ipsecDB->get_prop( $ipsecprop, 'rightrsasig' )
+                          || '';
+                        $OUT .= "    rightrsasigkey=$rightrsasig\n";
+
+                    }
+
+                    elsif ( $security eq 'certs' ) {
+
+                        $OUT .= "    authby=rsasig\n";
+
+                        my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
+                          || '%cert';
+                        $OUT .= "    leftrsasigkey=$leftrsasig\n";
+
+                        my $rightrsasig = $ipsecDB->get_prop( $ipsecprop, 'rightrsasig' )
+                          || '%cert';
+                        $OUT .= "    rightrsasigkey=$rightrsasig\n";
+
+                        my $leftcert = $ipsecDB->get_prop( $ipsecprop, 'leftcert' )
+                          || '"LeftCertName"';
+                        $OUT .= "    leftcert=\"$leftcert\"\n";
+
+                        my $rightcert = $ipsecDB->get_prop( $ipsecprop, 'rightcert' )
+                          || '"RightCertName"';
+                        $OUT .= "    rightcert=\"$rightcert\"\n";
+
+                    }
+
+                    else {
+                        $OUT .= "    authby=$security\n";
+                    }
+
+                    # Use connection value if it exists, if not use generic db value
+                    my $auto =
+                         $ipsecDB->get_prop( $ipsecprop, 'auto' )
+                      || $configDB->get_prop( $dbKey, 'auto' )
+                      || 'start';
+
+                    # If we are a static host to a dynamic client we are always add
+                    my $iptype = $ipsecDB->get_prop( $ipsecprop, 'iptype' ) || '';
+
+                    if ( $iptype eq 'stattodyn' ) {
+                        $OUT .= "    auto=add\n";
+                    }
+                    else {
+                        $OUT .= "    auto=$auto\n";
+                    }
+
+                    # We should change ipsecversion to 'ikev2'
+                    my $ipsecversion =
+                         $ipsecDB->get_prop( $ipsecprop, 'ipsecversion' )
+                      || $configDB->get_prop( $dbKey, 'ipsecversion' )
+                      || 'permit';
+
+                    $OUT .= "    ikev2=$ipsecversion\n";
+
+                    # Set the Phase one and Phase two default strengths - these are set to aes
+                    my $ike =
+                         $ipsecDB->get_prop( $ipsecprop, 'ike' )
+                      || $configDB->get_prop( $dbKey, 'ike' )
+                      || 'aes-sha1';
+                    $OUT .= "    ike=$ike\n";
+
+                    # We should change phase2 to phase2alg
+                    my $phase2 =
+                         $ipsecDB->get_prop( $ipsecprop, 'phase2' )
+                      || $configDB->get_prop( $dbKey, 'phase2' )
+                      || 'aes-sha1';
+                    $OUT .= "    phase2alg=$phase2\n";
+
+                    # mtu can only be set per connection
+                    my $mtu = $ipsecDB->get_prop( $ipsecprop, 'mtu' )
                       || '';
-                    $OUT .= "    leftrsasigkey=$leftrsasig\n";
 
-                    my $rightrsasig = $ipsecDB->get_prop( $ipsecprop, 'rightrsasig' )
+                    unless ( $mtu eq '' ) {
+                        $OUT .= "    mtu=$mtu\n";
+                    }
+
+                    # These should be from $configDB-> ipsec unless they exist in ipsec_connections
+
+                    my $forceencaps =
+                         $ipsecDB->get_prop( $ipsecprop, 'forceencaps' )
+                      || $configDB->get_prop( $dbKey, 'forceencaps' )
+                      || 'no';
+                    $OUT .= "    forceencaps=$forceencaps\n";
+
+                    my $keyingtries =
+                         $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )
+                      || $configDB->get_prop( $dbKey, 'keyingtries' )
+                      || '0';
+                    $OUT .= "    keyingtries=$keyingtries\n";
+
+                    # Following come from ipsecDB or configDB or hardcoded
+                    my $ikelifetime =
+                         $ipsecDB->get_prop( $ipsecprop, 'ikelifetime' )
+                      || $configDB->get_prop( $dbKey, 'ikelifetime' )
+                      || '3600s';
+                    $OUT .= "    ikelifetime=$ikelifetime\n";
+
+                    my $salifetime =
+                         $ipsecDB->get_prop( $ipsecprop, 'salifetime' )
+                      || $configDB->get_prop( $dbKey, 'salifetime' )
+                      || '28800s';
+                    $OUT .= "    salifetime=$salifetime\n";
+
+                    # Add is for incoming and is better that server dpd is ignored
+                    # Disabled for now
+
+                    #   if ( $auto ne 'add' ) {}
+                    my $dpdaction =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpdaction' )
+                      || $configDB->get_prop( $dbKey, 'dpdaction' )
+                      || 'restart';
+                    $OUT .= "    dpdaction=$dpdaction\n";
+
+                    my $dpddelay =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpddelay' )
+                      || $configDB->get_prop( $dbKey, 'dpddelay' )
+                      || '30';
+                    $OUT .= "    dpddelay=$dpddelay\n";
+
+                    my $dpdtimeout =
+                         $ipsecDB->get_prop( $ipsecprop, 'dpdtimeout' )
+                      || $configDB->get_prop( $dbKey, 'dpdtimeout' )
+                      || '10';
+                    $OUT .= "    dpdtimeout=$dpdtimeout\n";
+
+                    # default to yes unless overridden in the connection db
+                    my $pfs = $ipsecDB->get_prop( $ipsecprop, 'pfs' ) || 'yes';
+                    $OUT .= "    pfs=$pfs\n";
+
+                    # Following come from ipsecDB or configDB or hardcoded
+                    my $left =
+                         $ipsecDB->get_prop( $ipsecprop, 'left' )
+                      || $configDB->get_prop( $dbKey, 'left' )
+                      || '%defaultroute';
+                    $OUT .= "    left=$left\n";
+
+                    if ( $security eq 'certs' ) {
+                        my $leftid = ( $ipsecDB->get_prop( $ipsecprop, 'leftid' ) || '%fromcert' );
+                        $OUT .= "    leftid=$leftid\n";
+                    }
+
+                    # These ONLY come from the ipsec_configurations db
+                    elsif ( ( my $leftid = $ipsecDB->get_prop( $ipsecprop, 'leftid' ) || '' ) ne '' ) {
+                        $OUT .= "    leftid=$leftid\n";
+                    }
+
+                    my $leftsourceip = $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' )
                       || '';
-                    $OUT .= "    rightrsasigkey=$rightrsasig\n";
+                    $OUT .= "    leftsourceip=$leftsourceip\n";
 
-                }
+                    my $leftsub = $ipsecDB->get_prop( $ipsecprop, 'leftsubnet' )
+                      || '';
+                    $OUT .= "    leftsubnet=$leftsub\n";
 
-                elsif ( $security eq 'certs' ) {
+                    # If we are a static host to a dynamic client we HAVE to set right %any
 
-                    $OUT .= "    authby=rsasig\n";
+                    my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
 
-                    my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
-                      || '%cert';
-                    $OUT .= "    leftrsasigkey=$leftrsasig\n";
+                    if ( $iptype eq 'stattodyn' ) {
+                        $OUT .= "    right=%any\n";
+                    }
+                    else {
+                        $OUT .= "    right=$right\n";
+                    }
 
-                    my $rightrsasig = $ipsecDB->get_prop( $ipsecprop, 'rightrsasig' )
-                      || '%cert';
-                    $OUT .= "    rightrsasigkey=$rightrsasig\n";
+                    if ( $security eq 'certs' ) {
+                        my $rightid = ( $ipsecDB->get_prop( $ipsecprop, 'rightid' ) || '%fromcert' );
+                        $OUT .= "    rightid=$rightid\n";
+                    }
 
-                    my $leftcert = $ipsecDB->get_prop( $ipsecprop, 'leftcert' )
-                      || '"LeftCertName"';
-                    $OUT .= "    leftcert=\"$leftcert\"\n";
+                    elsif ( ( my $rightid = $ipsecDB->get_prop( $ipsecprop, 'rightid' ) || '' ) ne '' ) {
+                        $OUT .= "    rightid=$rightid\n";
+                    }
 
-                    my $rightcert = $ipsecDB->get_prop( $ipsecprop, 'rightcert' )
-                      || '"RightCertName"';
-                    $OUT .= "    rightcert=\"$rightcert\"\n";
+                    my $rightsubnet = $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
+                    $OUT .= "    rightsubnet=$rightsubnet\n";
 
-                }
-
+                }    # End If
                 else {
-                    $OUT .= "    authby=$security\n";
+                    $OUT .= "# conn $ipsecprop disabled\n";
                 }
 
-                # Use connection value if it exists, if not use generic db value
-                my $auto =
-                     $ipsecDB->get_prop( $ipsecprop, 'auto' )
-                  || $configDB->get_prop( $dbKey, 'auto' )
-                  || 'start';
-
-                # If we are a static host to a dynamic client we are always add
-                my $iptype = $ipsecDB->get_prop( $ipsecprop, 'iptype' ) || '';
-
-                if ( $iptype eq 'stattodyn' ) {
-                    $OUT .= "    auto=add\n";
-                }
-                else {
-                    $OUT .= "    auto=$auto\n";
-                }
-
-                # We should change ipsecversion to ikev2status
-                my $ipsecversion =
-                     $ipsecDB->get_prop( $ipsecprop, 'ipsecversion' )
-                  || $configDB->get_prop( $dbKey, 'ipsecversion' )
-                  || 'permit';
-
-                $OUT .= "    ikev2=$ipsecversion\n";
-
-                # Set the Phase one and Phase two default strengths - these are set to aes
-                my $ike =
-                     $ipsecDB->get_prop( $ipsecprop, 'ike' )
-                  || $configDB->get_prop( $dbKey, 'ike' )
-                  || 'aes-sha1';
-                $OUT .= "    ike=$ike\n";
-
-                my $phase2 =
-                     $ipsecDB->get_prop( $ipsecprop, 'phase2' )
-                  || $configDB->get_prop( $dbKey, 'phase2' )
-                  || 'aes-sha1';
-                $OUT .= "    phase2alg=$phase2\n";
-
-                # mtu can only be set per connection
-                my $mtu = $ipsecDB->get_prop( $ipsecprop, 'mtu' )
-                  || '';
-
-                unless ( $mtu eq '' ) {
-                    $OUT .= "    mtu=$mtu\n";
-                }
-
-                # These should be from $configDB-> ipsec unless they exist in ipsec_connections
-
-                my $keyingtries =
-                     $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )
-                  || $configDB->get_prop( $dbKey, 'keyingtries' )
-                  || '0';
-                $OUT .= "    keyingtries=$keyingtries\n";
-
-                # Following come from ipsecDB or configDB or hardcoded
-                my $ikelifetime =
-                     $ipsecDB->get_prop( $ipsecprop, 'ikelifetime' )
-                  || $configDB->get_prop( $dbKey, 'ikelifetime' )
-                  || '3600s';
-                $OUT .= "    ikelifetime=$ikelifetime\n";
-
-                my $salifetime =
-                     $ipsecDB->get_prop( $ipsecprop, 'salifetime' )
-                  || $configDB->get_prop( $dbKey, 'salifetime' )
-                  || '28800s';
-                $OUT .= "    salifetime=$salifetime\n";
-
-                # Add is for incoming and is better that server dpd is ignored
-                # Disabled for now
-
-                #   if ( $auto ne 'add' ) {}
-                my $dpdaction =
-                     $ipsecDB->get_prop( $ipsecprop, 'dpdaction' )
-                  || $configDB->get_prop( $dbKey, 'dpdaction' )
-                  || 'restart';
-                $OUT .= "    dpdaction=$dpdaction\n";
-
-                my $dpddelay =
-                     $ipsecDB->get_prop( $ipsecprop, 'dpddelay' )
-                  || $configDB->get_prop( $dbKey, 'dpddelay' )
-                  || '30';
-                $OUT .= "    dpddelay=$dpddelay\n";
-
-                my $dpdtimeout =
-                     $ipsecDB->get_prop( $ipsecprop, 'dpdtimeout' )
-                  || $configDB->get_prop( $dbKey, 'dpdtimeout' )
-                  || '10';
-                $OUT .= "    dpdtimeout=$dpdtimeout\n";
-
-                # default to yes unless overridden in the connection db
-                my $pfs = $ipsecDB->get_prop( $ipsecprop, 'pfs' ) || 'yes';
-                $OUT .= "    pfs=$pfs\n";
-
-                # Following come from ipsecDB or configDB or hardcoded
-                my $left =
-                     $ipsecDB->get_prop( $ipsecprop, 'left' )
-                  || $configDB->get_prop( $dbKey, 'left' )
-                  || '%defaultroute';
-                $OUT .= "    left=$left\n";
-
-                if ( $security eq 'certs' ) {
-                    my $leftid = ( $ipsecDB->get_prop( $ipsecprop, 'leftid' ) || '%fromcert' );
-                    $OUT .= "    leftid=$leftid\n";
-                }
-
-                # These ONLY come from the ipsec_configurations db
-                elsif ( ( my $leftid = $ipsecDB->get_prop( $ipsecprop, 'leftid' ) || '' ) ne '' ) {
-                    $OUT .= "    leftid=$leftid\n";
-                }
-
-                my $leftsourceip = $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' )
-                  || '';
-                $OUT .= "    leftsourceip=$leftsourceip\n";
-
-                my $leftsub = $ipsecDB->get_prop( $ipsecprop, 'leftsubnet' )
-                  || '';
-                $OUT .= "    leftsubnet=$leftsub\n";
-
-                # If we are a static host to a dynamic client we HAVE to set right %any
-
-                my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
-
-                if ( $iptype eq 'stattodyn' ) {
-                    $OUT .= "    right=%any\n";
-                }
-                else {
-                    $OUT .= "    right=$right\n";
-                }
-
-                if ( $security eq 'certs' ) {
-                    my $rightid = ( $ipsecDB->get_prop( $ipsecprop, 'rightid' ) || '%fromcert' );
-                    $OUT .= "    rightid=$rightid\n";
-                }
-
-                elsif ( ( my $rightid = $ipsecDB->get_prop( $ipsecprop, 'rightid' ) || '' ) ne '' ) {
-                    $OUT .= "    rightid=$rightid\n";
-                }
-
-                my $rightsubnet = $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
-                $OUT .= "    rightsubnet=$rightsubnet\n";
-
-            }    # End If
-            else {
-                $OUT .= "# conn $ipsecprop disabled\n";
-            }
+            }    # End unless
         }    # End foreach
     }    # End else
 }
