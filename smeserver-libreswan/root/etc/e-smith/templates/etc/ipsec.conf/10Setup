@@ -25,7 +25,8 @@
         my $dbKey = 'ipsec';
 
         # Generic setup file
-        my $debugstatus = $configDB->get_prop( $dbKey, 'debug' ) || 'none';
+        my $debugstatus = $configDB->get_prop( $dbKey, 'debug' )     || 'none';
+        my $keepalive   = $configDB->get_prop( $dbKey, 'keepalive' ) || '';
 
         # A standard config is included in the RPM but we need to generate a new one so we can modify settings
 
@@ -37,6 +38,10 @@
         $OUT .= "    dumpdir=/var/run/pluto/\n";
         $OUT .= "    nat_traversal=yes\n";
 
+        if ( $keepalive ne '' ) {
+            $OUT .= "    keep-alive=$keepalive\n";
+        }
+
         # This should get all the connections in an array
 
         my @connections = $ipsecDB->keys;
@@ -44,25 +49,29 @@
         $OUT .= "    virtual_private=";
 
         my $virtual_private = '';
-
+        my @subnetArr = ();
+        
         foreach my $ipsecprop (@connections) {
 
-            my $type = $ipsecDB->get_prop( "$ipsecprop", 'type' );
-            print "Connection: $ipsecprop Type: $type\n";
+            # Note that L2TPD needs the localsubnet in here
 
-            if ( $type eq "ipsec" ) {
-                print "Connection: $ipsecprop\n";
-                my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
+            my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 
-                if ( $ipsecstatus eq "enabled" ) {
-                    my $subnet = $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
-                    $virtual_private .= "%v4:$subnet,";
+            if ( $ipsecstatus eq 'enabled' ) {
+                my $rightsubnet = $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
+
+                # Check if the network is a unique value
+                if ( !( $rightsubnet ~~ @subnetArr ) ) {
+                    print "$rightsubnet\n";
+                    
+                    push( @subnetArr, $rightsubnet );
                 }
-
-                # End if
             }
 
-            # End foreach
+        }    # End foreach
+
+        foreach my $subnet (@subnetArr) {
+            $virtual_private .= "%v4:$subnet,";
         }
 
         # Remove last character ','
