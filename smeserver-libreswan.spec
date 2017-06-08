@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 25
+%define release 26
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -18,7 +18,7 @@ Patch6: smeserver-libreswan-ikev2-logrotate.patch
 Patch7: smeserver-libreswan-add-certificates.patch
 Patch8: smeserver-libreswan-modify-identifiers.patch
 Patch9: smeserver-libreswan-modify-identifiers1.patch
-
+Patch10: smeserver-libreswan-forceencaps-keepalive.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -31,6 +31,14 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+
+
+* Thu Jun 08 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-26.sme
+- add keep-alive option in main ipsec.conf
+- add forceencaps option overall default and per connection
+- small code tidy
+- Add support for L2TPD
+
 * Thu Jan 26 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-25.sme
  - Fix the ipsec.conf as well
  - remove automatic \@ in IDs - Fixes [SME: 9729]
@@ -178,6 +186,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%pactch10 -p1
 
 %build
 perl createlinks
