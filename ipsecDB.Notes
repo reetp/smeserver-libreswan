@@ -16,6 +16,22 @@ https://lists.libreswan.org/pipermail/swan/2015/001083.html
 
 Any question then please ask at forums.contribs.org in the Contribs sections.
 
+----------------------------------------------------------
+
+To make sense we should rename these keys:
+
+phase2 key should really be phase2alg
+ipsecversion should really be ikev2
+
+Per connection to add:
+forceencaps per connection - needs nat_traversal=yes but that is obsoleted and defaults to yes in 3.19 
+nat-keepalive yes (default)
+
+
+in main ipsec.conf
+
+keep-alive - delay in secs if enabled with nat-keepalive above
+
 
 ----------------------------------------------------------
 
