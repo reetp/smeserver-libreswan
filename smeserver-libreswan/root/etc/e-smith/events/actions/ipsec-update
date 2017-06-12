@@ -21,70 +21,84 @@
 # Note that we do not need to use the init ipsec script - we can start and
 # stop directly using /usr/sbin/ipsec which will call the init script
 
+# Probably ought to check somewhere that the status of services is public
+# But if it is private then you have to re-expand masq someplace
+
 use strict;
 use warnings;
 use esmith::ConfigDB;
 
 my $configDB = esmith::ConfigDB->open or die("can't open Config DB");
 my $ipsecDB = esmith::ConfigDB->open('ipsec_connections')
-  or die("Ipsec Error - cant connect to ipsec database");
+    or die("Ipsec Error - cant connect to ipsec database");
 
-my $dbKey = 'ipsec';
+my $ipsecDBkey      = 'ipsec';
+my $xl2tpdDBkey     = 'xl2tpd';
+my $xl2tpdipsecprop = "L2TPD-PSK";
 
 # Check on access status - we'll use this later
 # If status goes to disabled we should set this private
 
-my $ipsec_access = $configDB->get_prop( $dbKey, 'access' ) || 'private';
+my $ipsec_access = $configDB->get_prop( $ipsecDBkey, 'access' ) || 'private';
 print "Ipsec Information - IpsecAccessState: $ipsec_access\n";
 
 # If the service is set disabled then make sure it is stopped
 # Note that ipsec is not a service so we cannot use the normal service commands
 
-if ( $configDB->get_prop( $dbKey, 'status' ) eq 'disabled' ) {
+if ( $configDB->get_prop( $ipsecDBkey, 'status' ) eq 'disabled' ) {
+
+    # Always reset redirects on stop
+    print "Ipsec Information - reset redirects";
+    resetRedirects();
+
+    # Sort out xl2tpd - if ipsec is disabled it has to be stopped
+
+    print "Xl2tpd Information - ipsec is disabled - Stopping xl2tpd \n";
+    my $myStopXl2tpd = qx(/etc/rc.d/init.d/xl2tpd stop) || die("xl2tpd Error - Unable to launch xl2tpd stop : $!\n");
+
+    if ( not defined $myStopXl2tpd ) {
+        die("Ipsec Error - Unable to stop xl2tpd( error code $?)\n") if $?;
+    }
 
     # Do we check if it is already stopped ?
     # For now we stop it regardless
 
     print "Ipsec Information - ipsec disabled - Stopping ipsec \n";
+    my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop) || die("Ipsec Error - Unable to launch ipsec stop : $!\n");
 
-    # First set ipsec access to private which disables firewall rule
-    # Is this the correct syntax - what about die ?
-    # This is problematic as masq templates are already expanded and may be wrong
-
-    # Make sure access = private
-    # No point in this unless we expand the masq template again
-    
-    #unless ( $ipsec_access eq 'private' ) {
-    #    $configDB->set_prop( $dbKey, 'access', 'private' );
-    #}
-
-    my $myStopConnection = qx(/etc/rc.d/init.d/ipsec stop);
-    die("Ipsec Error - Unable to launch ipsec stop : $!\n")
-
-      if not defined $myStopConnection;
-    die("Ipsec Error - Unable to stop ipsec( error code $?)\n") if $?;
-
-    print "Ipsec Information - reset redirects";
-    resetRedirects();
+    if ( not defined $myStopConnection ) {
+        die("Ipsec Error - Unable to stop ipsec( error code $?)\n") if $?;
+    }
 
     exit 0;
 }
 
-# If the service is set to enabled AND running (then check the connections)
+# If the ipsec service is set to enabled AND running (then check the connections)
 
-if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
+if ( $configDB->get_prop( $ipsecDBkey, 'status' ) eq 'enabled' ) {
 
-    # Make sure access = public
-    # No point in this unless we expand the masq template again
-    
-    #unless ( $ipsec_access eq 'public' ) {
-    #    $configDB->set_prop( $dbKey, 'access', 'public' );
-    #}
+    # Sort out xl2tpd - if ipsec is enabled, AND xl2tpd then see if it is started
+    if ( $configDB->get_prop( $xl2tpdDBkey, 'status' ) eq 'enabled' ) {
+        my $xl2tpdstatus = (`ps ax | grep -v grep | grep xl2tpd`);
+
+        #If the service is not running then start it
+        unless ( $xl2tpdstatus =~ m/_xl2tpd/ ) {
+
+            print "Xl2tpd Information - xl2tpd enabled but stopped - starting xl2tpd \n";
+            my $myStartXl2tpd = qx(/etc/rc.d/init.d/xl2tpd start)
+                || die("xl2tpd Error - Unable to launch xl2tpd start : $!\n");
+
+            if ( not defined $myStartXl2tpd ) {
+                die("Ipsec Error - Unable to stop xl2tpd( error code $?)\n") if $?;
+            }
+
+        }
+    }
 
     my $status = (`ps ax | grep -v grep | grep pluto`);
 
-    #If the service is running
-    if ( $status =~ m/_plutorun/ ) {
+    # If the ipsec service is running
+    if ( $status =~ m/_plutorun/ )  {
 
         # Lets do some stuff
         print "Ipsec Information - ipsec is running !\n";
@@ -99,7 +113,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
             #Check the individual connection status
             my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' )
-              || "disabled";
+                || "disabled";
 
             # What type of connection are we ?
             my $connection = $ipsecDB->get_prop( "$ipsecprop", 'auto' ) || '';
@@ -120,13 +134,13 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
             my $reread = qx(/usr/sbin/ipsec auto --rereadsecrets);
 
             die("Ipsec Error - Unable launch ipsec reread secrets : $!\n")
-              if not defined $reread;
+                if not defined $reread;
             die("Ipsec Error - Unable to reread ipsec secrets ( error code $?)\n")
-              if $?;
+                if $?;
 
             # If we are enabled
-            if (    ( $previpsecstatus eq "enabled" )
-                 && ( $ipsecstatus eq "enabled" ) ) {
+            if (   ( $previpsecstatus eq "enabled" )
+                && ( $ipsecstatus eq "enabled" ) ) {
 
                 # Restart
                 print "Ipsec Information - Restarting connection - $ipsecprop\n";
@@ -152,20 +166,20 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
             }
 
             # If status is disabled then stop it
-            elsif (    ( $previpsecstatus eq "disabled" )
-                    && ( $ipsecstatus eq "disabled" ) ) {
+            elsif (( $previpsecstatus eq "disabled" )
+                && ( $ipsecstatus eq "disabled" ) ) {
 
                 # Stop
                 print "Ipsec Information - Stop connection - $ipsecprop\n";
                 stopConnection($ipsecprop);
 
                 # Set Previous status
-                changeState( $dbKey, $ipsecstatus );
+                changeState( $ipsecDBkey, $ipsecstatus );
             }
 
             # If status was disabled and now enabled then start it
-            elsif (    ( $previpsecstatus eq "disabled" )
-                    && ( $ipsecstatus eq "enabled" ) ) {
+            elsif (( $previpsecstatus eq "disabled" )
+                && ( $ipsecstatus eq "enabled" ) ) {
 
                 # Start
                 print "Enabling connection $ipsecprop\n";
@@ -192,8 +206,8 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
             }
 
             # If status was enabled and now disabled then stop it
-            elsif (    ( $previpsecstatus eq "enabled" )
-                    && ( $ipsecstatus eq "disabled" ) ) {
+            elsif (( $previpsecstatus eq "enabled" )
+                && ( $ipsecstatus eq "disabled" ) ) {
 
                 # Stop and remove - do we need to  ?
                 print "Ipsec Information - Stopping connection $ipsecprop\n ";
@@ -220,13 +234,13 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
         # Make sure access = public
         unless ( $ipsec_access eq 'public' ) {
-            $configDB->set_prop( $dbKey, 'access', 'public' );
+            $configDB->set_prop( $ipsecDBkey, 'access', 'public' );
         }
 
         print "Ipsec Information - ipsec enabled - Starting ipsec\n ";
         my $myStartConnection = qx(/etc/rc.d/init.d/ipsec start);
         die("Ipsec Error - Unable to launch ipsec start : $!\n ")
-          if not defined $myStartConnection;
+            if not defined $myStartConnection;
         die("Ipsec Error - Unable to launch ipsec start ( error code $?)\n ") if $?;
 
         exit 0;
@@ -240,7 +254,7 @@ if ( $configDB->get_prop( $dbKey, 'status' ) eq 'enabled' ) {
 
 sub changeState {
 
-    #@_ contains $dbKey and $ipsecstatus
+    #@_ contains $ipsecDBkey and $ipsecstatus
     $ipsecDB->set_prop( $_[0], 'PreviousState', $_[1] );
 }
 
@@ -262,23 +276,23 @@ sub setRedirects {
     # Make sure you read and understand what happens !
     # If I knew which specific interfaces to change we could reduce the lines here
     system("/sbin/sysctl -w net.ipv4.conf.all.send_redirects=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.default.send_redirects=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
 
     system("/sbin/sysctl -w net.ipv4.conf.all.accept_redirects=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.default.accept_redirects=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
 
     system("/sbin/sysctl -w net.ipv4.conf.default.rp_filter=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.eth0.rp_filter=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.eth1.rp_filter=0") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
 
     # On v8 this is set to 0 so we would need
     # system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
@@ -291,6 +305,6 @@ sub resetRedirects {
     # This should reload the file - if ipsec is disabled it should reset to defaults
     # If ipsec is enabled it should disable rp_filtering
     system("/sbin/sysctl -p") == 0
-      or die("Ipsec Error - A problem occurred with sysctl: $?");
+        or die("Ipsec Error - A problem occurred with sysctl: $?");
 }
 
