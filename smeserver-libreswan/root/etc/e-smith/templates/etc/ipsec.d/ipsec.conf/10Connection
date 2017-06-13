@@ -29,7 +29,7 @@
 
         foreach my $ipsecprop (@connections) {
 
-            unless ( $ipsecprop = 'L2TPD-PSK' ) {
+            if ( $ipsecprop ne 'L2TPD-PSK' ) {
 
                 # first we verify if IPSec is enabled for the connection
 
