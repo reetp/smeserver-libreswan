@@ -18,7 +18,7 @@ Patch6: smeserver-libreswan-ikev2-logrotate.patch
 Patch7: smeserver-libreswan-add-certificates.patch
 Patch8: smeserver-libreswan-modify-identifiers.patch
 Patch9: smeserver-libreswan-modify-identifiers1.patch
-Patch10: smeserver-libreswan-forceencaps-keepalive.patch
+Patch10: smeserver-libreswan-forceencaps-l2tpd.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -33,7 +33,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %changelog
 
 
-* Thu Jun 08 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-26.sme
+* Thu Jun 15 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-26.sme
 - add keep-alive option in main ipsec.conf
 - add forceencaps option overall default and per connection
 - small code tidy
