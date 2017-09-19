@@ -272,6 +272,9 @@ sub stopConnection {
 
 sub setRedirects {
 
+    my $internalIf = $configDB->get_prop( 'InternalInterface', 'Name' );
+    my $externalIf = $configDB->get_prop( 'ExternalInterface', 'Name' );
+
     # Big warning - this is a potential security issue
     # Make sure you read and understand what happens !
     # If I knew which specific interfaces to change we could reduce the lines here
@@ -289,13 +292,11 @@ sub setRedirects {
         or die("Ipsec Error - A problem occurred with sysctl: $?");
     system("/sbin/sysctl -w net.ipv4.conf.all.rp_filter=0") == 0
         or die("Ipsec Error - A problem occurred with sysctl: $?");
-    system("/sbin/sysctl -w net.ipv4.conf.eth0.rp_filter=0") == 0
+    system("/sbin/sysctl -w net.ipv4.conf.$externalIf.rp_filter=0") == 0
         or die("Ipsec Error - A problem occurred with sysctl: $?");
-    system("/sbin/sysctl -w net.ipv4.conf.eth1.rp_filter=0") == 0
+    system("/sbin/sysctl -w net.ipv4.conf.$internalIf.rp_filter=0") == 0
         or die("Ipsec Error - A problem occurred with sysctl: $?");
 
-    # On v8 this is set to 0 so we would need
-    # system ("/sbin/sysctl -w net.core.xfrm_larval_drop=1") == 0 or die ("A problem occurred with sysctl: $?");
 
 }
 
