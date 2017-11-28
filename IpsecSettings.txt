@@ -61,8 +61,8 @@ connectiontype: Default tunnel | transport/passthrough/drop/reject
 leftrsasig: Default Empty | Your Local rsasignature key
 rightrsasig: Default Empty | Your Remote rsasignature key
 ipsecversion: Default permit | Whether to allow ikev2 - also : insist/propose/yes/never/no 
-ike: Default aes-sha1 | Varable
-phase2: aes-sha1 | Variable
+ike: Default aes-sha1 | Variable - aes256-sha2;dh14 or aes256-sha2;modp2048
+phase2: aes-sha1 | Variable - sample aes256-sha2;dh14 or aes256-sha2;modp2048
 mtu: Default Empty | Variable
 left: Default Empty | If Empty then %defaultroute is set. Can be local WAN IP
 leftid: Default Empty | Variable
