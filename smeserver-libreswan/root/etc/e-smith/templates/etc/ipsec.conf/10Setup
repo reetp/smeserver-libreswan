@@ -34,7 +34,6 @@
         $OUT .= "    #klipsdebug=none\n";
         $OUT .= "    plutostderrlog=/var/log/pluto/pluto.log\n";
         $OUT .= "    dumpdir=/var/run/pluto/\n";
-        $OUT .= "    nat_traversal=yes\n";
 
         if ( $keepalive ne '' ) {
             $OUT .= "    keep-alive=$keepalive\n";
@@ -52,18 +51,27 @@
         foreach my $ipsecprop (@connections) {
 
             # Note that L2TPD needs the localsubnet in here
+            # Second thoughts I don't think it does
+            # Only when you have subnet <-> subnet
 
             my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 
-            if ( $ipsecstatus eq 'enabled' ) {
+            my $ipsecrecord = $ipsecDB->get($ipsecprop);
+            my $type = $ipsecrecord->prop('type');
+
+            if ( $ipsecstatus eq 'enabled' && $type eq 'ipsec' ) {
+
                 my $rightsubnet = $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
 
+                unless ( $rightsubnet ) {
+                warn ("Warning $ipsecprop has no right subnet");
+                }
+
                 # Check if the network is a unique value
-                if ( !( $rightsubnet ~~ @subnetArr ) ) {
-                    print "$rightsubnet\n";
-                    
+                if ( $rightsubnet && !( $rightsubnet ~~ @subnetArr ) ) {
                     push( @subnetArr, $rightsubnet );
                 }
+
             }
 
         }    # End foreach

@@ -148,7 +148,8 @@
                            $ipsecDB->get_prop( $ipsecprop, 'forceencaps' )
                         || $configDB->get_prop( $dbKey, 'forceencaps' )
                         || 'no';
-                    $OUT .= "    forceencaps=$forceencaps\n";
+                    
+                    $OUT .= "    encapsulation=$forceencaps\n";
 
                     my $keyingtries =
                            $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )

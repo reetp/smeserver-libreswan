@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 27
+%define release 28
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -20,18 +20,25 @@ Patch8: smeserver-libreswan-modify-identifiers.patch
 Patch9: smeserver-libreswan-modify-identifiers1.patch
 Patch10: smeserver-libreswan-forceencaps-l2tpd.patch
 Patch11: smeserver-libreswan-variable-network-interfaces.patch
+Patch12: smeserver-libreswan-remove-obsoletes.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
 BuildRequires: e-smith-devtools
-Requires:  e-smith-release >= 9.0
-Requires:  libreswan >= 3.16
+Requires:  e-smith-release >= 9.2
+Requires:  libreswan >= 3.23
 AutoReqProv: no
 
 %description
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Thu Jun 21 2018 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-28.sme
+- Bump required Libreswan to 3.23
+- Chamge forceencaps to encapsulation
+- Remove obsolete nat_traversal
+- Modify ipsec.conf for no rightsubnet in xl2tpd
+
 * Tue Sep 19 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-27.sme
 - Allow variable network interface names - Stefano Zamboni
 
@@ -190,6 +197,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
 
 %build
 perl createlinks
