@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 23
+%define release 27
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -16,7 +16,10 @@ Patch4: smeserver-libreswan-fix-rsa-id.patch
 Patch5: smeserver-libreswan-fix-createlinks.patch
 Patch6: smeserver-libreswan-ikev2-logrotate.patch
 Patch7: smeserver-libreswan-add-certificates.patch
-
+Patch8: smeserver-libreswan-modify-identifiers.patch
+Patch9: smeserver-libreswan-modify-identifiers1.patch
+Patch10: smeserver-libreswan-forceencaps-l2tpd.patch
+Patch11: smeserver-libreswan-variable-network-interfaces.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -29,6 +32,23 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Tue Sep 19 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-27.sme
+- Allow variable network interface names - Stefano Zamboni
+
+* Thu Jun 15 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-26.sme
+- add keep-alive option in main ipsec.conf
+- add forceencaps option overall default and per connection
+- small code tidy
+- Add support for L2TPD
+
+* Thu Jan 26 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-25.sme
+ - Fix the ipsec.conf as well
+ - remove automatic \@ in IDs - Fixes [SME: 9729]
+ 
+* Thu Jan 26 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-24.sme
+ - remove automatic \@ in IDs - Fixes [SME: 9729]
+ - fix swapped left/right IDs in password file
+
 * Wed Jan 25 2017 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-23.sme
 - Add the ability to use PEM/PKCS#12 certificates - fixes [SME: 9942]
 - lots of code tidying
@@ -166,6 +186,10 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
+%patch11 -p1
 
 %build
 perl createlinks
@@ -194,7 +218,7 @@ rm -rf %{name}-%{version}
 /sbin/init q
 
 
-echo "see http://wiki.contribs.org/VPN"
+echo "see https://wiki.contribs.org/Libreswan"
 
 %postun
 /sbin/e-smith/expand-template /etc/rc.d/init.d/masq
