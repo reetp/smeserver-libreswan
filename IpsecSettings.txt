@@ -73,6 +73,7 @@ rightid: Default Empty | Variable
 rightsubnet: Default Empty | Destination subnet
 passwd: Default Empty | Variable
 keyingtries: Default Empty | 0 is default - 'forever'
+reauth: Default Empty | 1 or y - sets to boolean 1 (hidden libreswan setting)
 
 leftcert Default Empty | LeftCertName
 rightcert Default Empty | RightCertName
