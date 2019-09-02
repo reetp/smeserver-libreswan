@@ -246,7 +246,7 @@
                     
                     my $reauth = $ipsecDB->get_prop( $ipsecprop, 'reauth' ) || '';
                     if ($reauth eq 'y' || $reauth eq '1' ) {
-                        $OUT .= "    reauth=1\n";
+                        $OUT .= "    reauth=yes\n";
                     }
 
 
