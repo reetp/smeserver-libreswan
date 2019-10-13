@@ -21,6 +21,7 @@ Patch9: smeserver-libreswan-modify-identifiers1.patch
 Patch10: smeserver-libreswan-forceencaps-l2tpd.patch
 Patch11: smeserver-libreswan-variable-network-interfaces.patch
 Patch12: smeserver-libreswan-remove-obsoletes.patch
+Patch13: smeserver-libreswan-checkl-2tpd-status.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -33,6 +34,9 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Wed Jul 11 2018 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-29.sme
+- Fix issue when there is no xl2tpd key
+
 * Thu Jun 21 2018 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-28.sme
 - Bump required Libreswan to 3.23
 - Chamge forceencaps to encapsulation
@@ -198,6 +202,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 
 %build
 perl createlinks
