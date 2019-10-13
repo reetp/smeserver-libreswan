@@ -44,7 +44,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 
 * Thu Jun 21 2018 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-28.sme
 - Bump required Libreswan to 3.23
-- Chamge forceencaps to encapsulation
+- Change forceencaps to encapsulation
 - Remove obsolete nat_traversal
 - Modify ipsec.conf for no rightsubnet in xl2tpd
 

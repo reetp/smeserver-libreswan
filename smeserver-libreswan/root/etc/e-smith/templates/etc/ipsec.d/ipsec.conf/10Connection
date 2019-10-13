@@ -243,6 +243,12 @@
 
                     my $rightsubnet = $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
                     $OUT .= "    rightsubnet=$rightsubnet\n";
+                    
+                    my $reauth = $ipsecDB->get_prop( $ipsecprop, 'reauth' ) || '';
+                    if ($reauth eq 'y' || $reauth eq '1' ) {
+                        $OUT .= "    reauth=yes\n";
+                    }
+
 
                 }    # End If
                 else {
