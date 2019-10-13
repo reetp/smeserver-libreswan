@@ -78,11 +78,13 @@ if ( $configDB->get_prop( $ipsecDBkey, 'status' ) eq 'disabled' ) {
 if ( $configDB->get_prop( $ipsecDBkey, 'status' ) eq 'enabled' ) {
 
     # Sort out xl2tpd - if ipsec is enabled, AND xl2tpd then see if it is started
-    if ( $configDB->get_prop( $xl2tpdDBkey, 'status' ) eq 'enabled' ) {
-        my $xl2tpdstatus = (`ps ax | grep -v grep | grep xl2tpd`);
+    my $xl2tpdstatus = $configDB->get_prop( $xl2tpdDBkey, 'status' ) || 'disabled';
+
+    if ( $xl2tpdstatus eq 'enabled' ) {
+        my $xl2tpdService = (`ps ax | grep -v grep | grep xl2tpd`);
 
         #If the service is not running then start it
-        unless ( $xl2tpdstatus =~ m/_xl2tpd/ ) {
+        unless ( $xl2tpdService =~ m/_xl2tpd/ ) {
 
             print "Xl2tpd Information - xl2tpd enabled but stopped - starting xl2tpd \n";
             my $myStartXl2tpd = qx(/etc/rc.d/init.d/xl2tpd start)
