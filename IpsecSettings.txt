@@ -74,6 +74,7 @@ rightsubnet: Default Empty | Destination subnet
 passwd: Default Empty | Variable
 keyingtries: Default Empty | 0 is default - 'forever'
 forcencaps: Default auto | auto/yes/no
+reauth: Default Empty | 1 or y - sets to yes (hidden libreswan setting)
 
 leftcert Default Empty | LeftCertName
 rightcert Default Empty | RightCertName
