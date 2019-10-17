@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 30
+%define release 31
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -23,6 +23,7 @@ Patch11: smeserver-libreswan-variable-network-interfaces.patch
 Patch12: smeserver-libreswan-remove-obsoletes.patch
 Patch13: smeserver-libreswan-add-reauth.patch
 Patch14: smeserver-libreswan-check-l2tpd-status.patch
+Patch15: smeserver-libreswan-include-l2tpd-rightsubnet.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -35,6 +36,10 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Thu Oct 17 2019 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-31.sme
+- Allow rightsubnet for xl2tpd in virtual_private
+- Add check for empty virtual_private hosts
+
 * Sun Oct 13 2019 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-30.sme
 - Fix issue when there is no xl2tpd key
 
@@ -209,6 +214,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch12 -p1
 %patch13 -p1
 %patch14 -p1
+%patch15 -p1
 
 %build
 perl createlinks

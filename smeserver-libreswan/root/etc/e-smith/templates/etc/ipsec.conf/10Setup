@@ -18,7 +18,7 @@
 
     else {
         my $ipsecDB = esmith::ConfigDB->open_ro('ipsec_connections')
-          or die("cant connect to ipsec database");
+            or die("cant connect to ipsec database");
 
         my $dbKey = 'ipsec';
 
@@ -43,11 +43,9 @@
 
         my @connections = $ipsecDB->keys;
 
-        $OUT .= "    virtual_private=";
-
         my $virtual_private = '';
-        my @subnetArr = ();
-        
+        my @subnetArr       = ();
+
         foreach my $ipsecprop (@connections) {
 
             # Note that L2TPD needs the localsubnet in here
@@ -57,37 +55,38 @@
             my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
 
             my $ipsecrecord = $ipsecDB->get($ipsecprop);
-            my $type = $ipsecrecord->prop('type');
+            my $type        = $ipsecrecord->prop('type');
 
-            if ( $ipsecstatus eq 'enabled' && $type eq 'ipsec' ) {
+            if ( $ipsecstatus eq 'enabled' && ( $type eq 'ipsec' || $type eq 'xl2tpd' ) ) {
 
                 my $rightsubnet = $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
 
-                unless ( $rightsubnet ) {
-                warn ("Warning $ipsecprop has no right subnet");
+                unless ($rightsubnet) {
+                    warn("Warning $ipsecprop has no right subnet");
                 }
 
                 # Check if the network is a unique value
                 if ( $rightsubnet && !( $rightsubnet ~~ @subnetArr ) ) {
                     push( @subnetArr, $rightsubnet );
                 }
-
             }
-
         }    # End foreach
 
-        foreach my $subnet (@subnetArr) {
-            $virtual_private .= "%v4:$subnet,";
-        }
+        unless ( @subnetArr == 0 ) {
+            $OUT .= "    virtual_private=";
 
-        # Remove last character ','
-        chop($virtual_private);
-        $OUT .= "$virtual_private\n";
-        $OUT .= "\n";
-        $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
+            foreach my $subnet (@subnetArr) {
+                $virtual_private .= "%v4:$subnet,";
+            }
 
-        # End else
-    }
+            # Remove last character ','
+            chop($virtual_private);
+            $OUT .= "$virtual_private\n";
+            $OUT .= "\n";
+            $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
+
+        }    #end unless
+    }    # End else
 
     # End
 }
