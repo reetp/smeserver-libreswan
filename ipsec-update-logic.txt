@@ -6,7 +6,7 @@ If disabled we should force access = private but this wouldn't get picked on ser
 
 Currently disabled
 
-Here is a list of the rough logic of the ipsec-update script
+Here is a list of the rough logic in the ipsec-update script.
 
 Stopped & Disabled
 
@@ -39,17 +39,17 @@ If started and enabled
         auto --up
         changestate
     
-    Elseif dis-dis
+    Elseif disabled-disabled
     stop
     changestate
 
-    Elseif dis-en
+    Elseif disabled-enabled
     auto --replace
         If start
         auto --up
         changestate
 
-    Elseif en-dis
+    Elseif enabled-disabled
     stop
     changestate
 
