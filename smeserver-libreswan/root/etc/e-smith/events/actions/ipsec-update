@@ -84,11 +84,11 @@ if ( $configDB->get_prop( $ipsecDBkey, 'status' ) eq 'enabled' ) {
         my $xl2tpdService = (`ps ax | grep -v grep | grep xl2tpd`);
 
         #If the service is not running then start it
-        unless ( $xl2tpdService =~ m/_xl2tpd/ ) {
+        unless ( $xl2tpdService =~ m/xl2tpd/ ) {
 
-            print "Xl2tpd Information - xl2tpd enabled but stopped - starting xl2tpd \n";
-            my $myStartXl2tpd = qx(/etc/rc.d/init.d/xl2tpd start)
-                || die("xl2tpd Error - Unable to launch xl2tpd start : $!\n");
+            print "Xl2tpd Information - xl2tpd enabled but stopped - restarting xl2tpd \n";
+            my $myStartXl2tpd = qx(/etc/rc.d/init.d/xl2tpd restart)
+                || die("xl2tpd Error - Unable to launch xl2tpd restart : $!\n");
 
             if ( not defined $myStartXl2tpd ) {
                 die("Ipsec Error - Unable to stop xl2tpd( error code $?)\n") if $?;
