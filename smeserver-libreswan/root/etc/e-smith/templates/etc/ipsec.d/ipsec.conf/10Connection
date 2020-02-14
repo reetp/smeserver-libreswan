@@ -154,7 +154,7 @@
                     my $keyingtries =
                            $ipsecDB->get_prop( $ipsecprop, 'keyingtries' )
                         || $configDB->get_prop( $dbKey, 'keyingtries' )
-                        || '0';
+                        || '%forever';
                     $OUT .= "    keyingtries=$keyingtries\n";
 
                     # Following come from ipsecDB or configDB or hardcoded
