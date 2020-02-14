@@ -42,29 +42,29 @@
         # This should get all the connections in an array
 
         my @connections = $ipsecDB->keys;
-
+        
         my $virtual_private = '';
         my @subnetArr       = ();
-
+        
         foreach my $ipsecprop (@connections) {
-
+        
             # Note that L2TPD needs the localsubnet in here
             # Second thoughts I don't think it does
             # Only when you have subnet <-> subnet
-
+        
             my $ipsecstatus = $ipsecDB->get_prop( "$ipsecprop", 'status' ) || "disabled";
-
+        
             my $ipsecrecord = $ipsecDB->get($ipsecprop);
             my $type        = $ipsecrecord->prop('type');
-
+        
             if ( $ipsecstatus eq 'enabled' && ( $type eq 'ipsec' || $type eq 'xl2tpd' ) ) {
-
+        
                 my $rightsubnet = $ipsecDB->get_prop( "$ipsecprop", 'rightsubnet' );
-
+        
                 unless ($rightsubnet) {
                     warn("Warning $ipsecprop has no right subnet");
                 }
-
+        
                 # Check if the network is a unique value
                 if ( $rightsubnet && !( $rightsubnet ~~ @subnetArr ) ) {
                     push( @subnetArr, $rightsubnet );
@@ -72,22 +72,27 @@
             }
         }    # End foreach
 
+        $virtual_private .= "    virtual-private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,";
+        
         unless ( @subnetArr == 0 ) {
-            $OUT .= "    virtual_private=";
-
+        
+            # For NAT and vhost:%priv seting exclude any right subnets
             foreach my $subnet (@subnetArr) {
-                $virtual_private .= "%v4:$subnet,";
+                $virtual_private .= "%v4:!$subnet,";
             }
-
+        
             # Remove last character ','
             chop($virtual_private);
             $OUT .= "$virtual_private\n";
             $OUT .= "\n";
-            $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
-
+        
         }    #end unless
+        
+        # I think that this is all we really need. as long as we don't have complex subnets etc
+        # $OUT .= "    virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12";
+        $OUT .= "include /etc/ipsec.d/ipsec.conf\n";
+        
     }    # End else
-
     # End
 }
 
