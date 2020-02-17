@@ -1,8 +1,8 @@
-
 {
     use strict;
     use warnings;
     use esmith::ConfigDB;
+    use NetAddr::IP;
 
     my $configDB    = esmith::ConfigDB->open_ro or die("can't open Config DB");
     my $dbKey       = 'ipsec';
@@ -213,17 +213,26 @@
                         $OUT .= "    leftid=$leftid\n";
                     }
 
+                    # Left sourceIP and leftsubnet can be taken from the Internal interface
+                    # but we can allow them to be overridden
+
+                    #my $internalAddr    = $configDB->get_prop( 'InternalInterface', 'IPAddress' );
+                    my $internalMask    = $configDB->get_prop( 'InternalInterface', 'Netmask' );
+                    my $internalNetwork = $configDB->get_prop( 'InternalInterface', 'Network' );
+
+                    my $ip = NetAddr::IP->new( $internalNetwork, $internalMask ) or die "Invalid host/mask";
+                    my $internalCIDRNetwork = ( $ip->network() );
+
                     my $leftsourceip = $ipsecDB->get_prop( $ipsecprop, 'leftsourceip' )
-                        || '';
+                        || $configDB->get_prop( 'InternalInterface', 'IPAddress' );
                     $OUT .= "    leftsourceip=$leftsourceip\n";
 
-                    my $leftsub = $ipsecDB->get_prop( $ipsecprop, 'leftsubnet' )
-                        || '';
-                    $OUT .= "    leftsubnet=$leftsub\n";
+                    my $leftsubnet = $ipsecDB->get_prop( $ipsecprop, 'leftsubnet' ) || $internalCIDRNetwork;
+                    $OUT .= "    leftsubnet=$leftsubnet\n";
 
                     # If we are a static host to a dynamic client we HAVE to set right %any
-
-                    my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '';
+                    # Should never be empty
+                    my $right = $ipsecDB->get_prop( $ipsecprop, 'right' ) || '%any';
 
                     if ( $iptype eq 'stattodyn' ) {
                         $OUT .= "    right=%any\n";
@@ -242,19 +251,19 @@
                     }
 
                     my $rightsubnet = $ipsecDB->get_prop( $ipsecprop, 'rightsubnet' ) || '';
-                    $OUT .= "    rightsubnet=$rightsubnet\n";
-
-                    my $reauth = $ipsecDB->get_prop( $ipsecprop, 'reauth' ) || '';
-                    if ($reauth eq 'y' || $reauth eq '1' ) {
-                        $OUT .= "    reauth=yes\n";
+                    if ( $rightsubnet ne '' ) {
+                        $OUT .= "    rightsubnet=$rightsubnet\n";
                     }
 
-                }    # End If
+                    my $reauth = $ipsecDB->get_prop( $ipsecprop, 'reauth' ) || '';
+                    if ( $reauth eq 'y' || $reauth eq '1' ) {
+                        $OUT .= "    reauth=yes\n";
+                    }
+                }    # End if ( $ipsecstatus eq 'enabled' )
                 else {
                     $OUT .= "# conn $ipsecprop disabled\n";
                 }
-
-            }    # End unless
+            }    # End if ( $ipsecprop ne 'L2TPD-PSK' )
         }    # End foreach
     }    # End else
 }
