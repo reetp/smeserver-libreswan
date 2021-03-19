@@ -1,6 +1,6 @@
 %define name smeserver-libreswan
 %define version 0.5
-%define release 34
+%define release 35
 Summary: Plugin to enable IPSEC connections
 Name: %{name}
 Version: %{version}
@@ -27,6 +27,7 @@ Patch15: smeserver-libreswan-include-l2tpd-rightsubnet.patch
 Patch16: smeserver-libreswan-fix-xl2tpd-status-check.patch
 Patch17: smeserver-libreswan-createlinks.patch
 Patch18: smeserver-libreswan-modify-leftrightsubnet.patch
+Patch19: smeserver-libreswan-0.5-Update-for-systemd.patch
 
 BuildRoot: /var/tmp/%{name}-%{version}
 BuildArchitectures: noarch
@@ -39,6 +40,10 @@ AutoReqProv: no
 Libreswan is a free software implementation of the most widely supported and standardised VPN protocol based on ("IPsec") and the Internet Key Exchange ("IKE")
 
 %changelog
+* Mon Mar 01 2021 Brian Read <brianr@bjsystems.co.uk> 0.5-35.sme
+- Initial Import in SME10 tree  [SME: 11405]
+- Update for systemd
+
 * Mon Feb 17 2020 John Crisp <jcrisp@safeandsoundit.co.uk> 0.5-34.sme
 - auto insert leftsourceip and subnet from internal interface
 - Force right to have a value
@@ -232,6 +237,7 @@ Libreswan is a free software implementation of the most widely supported and sta
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
 
 %build
 perl createlinks

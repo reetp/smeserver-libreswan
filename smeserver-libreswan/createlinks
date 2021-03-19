@@ -3,10 +3,31 @@
 # Need some thought on when the templates should be expanded and when the action should be called.
 
 use esmith::Build::CreateLinks qw(:all);
-my $event = "ipsec-update";
+
+# our event specific for updating with yum without reboot
+$event = "smeserver-libreswan-update";
+#add here the path to your templates needed to expand
+#see the /etc/systemd/system-preset/49-koozali.preset should be present for systemd integration on all you yum update event
+
+foreach my $file (qw(
+                /etc/systemd/system-preset/49-koozali.preset
+))
+{
+    templates2events( $file, $event );
+}
+
+#action needed in case we have a systemd unit
+event_link("systemd-default", $event, "10");
+event_link("systemd-reload", $event, "50");
+
+#action specific to this package
+event_link("ipsec-update", $event, "60");
+
+#services we need to restart
+safe_symlink("restart", "root/etc/e-smith/events/$event/services2adjust/ipsec");
 
 # ipsec-update
-
+my $event = "ipsec-update";
 foreach (qw(
        /etc/ipsec.conf
        /etc/ipsec.secrets
@@ -32,10 +53,10 @@ foreach (qw(
 event_link("ipsec-update", $event, "10");
 
 # Runlevel init links.
-service_link_enhanced("ipsec", "S95", "7");
-service_link_enhanced("ipsec", "K21", "6");
-service_link_enhanced("ipsec", "K21", "0");
-service_link_enhanced("ipsec", "K21", "1");
+#service_link_enhanced("ipsec", "S95", "7");
+#service_link_enhanced("ipsec", "K21", "6");
+#service_link_enhanced("ipsec", "K21", "0");
+#service_link_enhanced("ipsec", "K21", "1");
 
 safe_symlink("adjust", "root/etc/e-smith/events/$event/services2adjust/masq");
 
