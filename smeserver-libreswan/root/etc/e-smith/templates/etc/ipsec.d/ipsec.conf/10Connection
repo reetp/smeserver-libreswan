@@ -58,6 +58,7 @@
                     # my $certname = $ipsecDB->get_prop( "$ipsecprop", 'certname' ) || ''; ???? Is this required ?
 
                     if ( $security eq 'rsasig' ) {
+                        $OUT .= "    # After 3.3.0 this needs rsa-sha1 for older Strongswan\n";
                         $OUT .= "    authby=rsasig\n";
 
                         my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
@@ -71,7 +72,7 @@
                     }
 
                     elsif ( $security eq 'certs' ) {
-
+                        $OUT .= "    # After 3.3.0 this needs rsa-sha1 for older Strongswan\n";
                         $OUT .= "    authby=rsasig\n";
 
                         my $leftrsasig = $ipsecDB->get_prop( $ipsecprop, 'leftrsasig' )
